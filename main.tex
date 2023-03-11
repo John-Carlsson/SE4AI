@@ -1,0 +1,116 @@
+\documentclass[a4paper, 12pt, oneside]{book}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=3cm, bindingoffset=1cm]{geometry}
+\linespread{1.5}
+\usepackage[backend=biber, sorting=none]{biblatex}
+\addbibresource{bib.bib}
+\usepackage{float}
+\usepackage{csquotes}
+\usepackage{subfig}
+\usepackage{graphicx}
+\usepackage{indentfirst}
+\usepackage{fancyhdr}
+\setlength{\parindent}{1cm}
+
+\pagestyle{fancy}
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ \uppercase{#1}}{}}
+\fancyhf{}
+\fancyhead[C]{\textbf{\leftmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{1pt}
+\renewcommand{\footrulewidth}{1pt}
+\usepackage[Conny]{fncychap}
+
+\title{Tesi Magistrale}
+\author{Ivan Colucci}
+\date{January 2020}
+
+\newenvironment{dedication}
+  {\clearpage           % we want a new page
+   \thispagestyle{empty}% no header and footer
+   \vspace*{\stretch{1}}% some space at the top 
+   \itshape             % the text is in italics
+   \raggedleft          % flush to the right margin
+  }
+  {\par % end the paragraph
+   \vspace{\stretch{3}} % space at bottom is three times that at the top
+   \clearpage           % finish off the page
+  }
+  
+\begin{document}
+%Frontespizio
+\begin{titlepage}
+    \begin{center}
+        \LARGE{\uppercase{Università degli Studi di Salerno}}\\
+        \vspace{5mm}
+        %Dipartimento
+    	\uppercase{\normalsize Dipartimento di Ingegneria del informatica }\\
+    \end{center}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.35\textwidth]{logo_unisa}
+    \end{figure}
+    
+    \begin{center}
+        %Corso di Laurea
+    	\normalsize{Project in Software Engineering for Artificial intelligence}\\
+    	\vspace{15mm}
+    	%Titolo
+        {\LARGE{\bf Experimenting with Emotional Recognition Systems}}\\
+    	\vspace{3mm}
+    \end{center}
+    
+    \vspace{15mm}
+    \noindent
+    \begin{minipage}[t]{0.47\textwidth}
+        %Relatore
+    	{\large{ Relatore:\\\bf Ch.mo Prof. \\Alberto ANGELA}}
+    	\vspace{12mm}\\
+    	%Correlatore
+    	{\large{ Correlatore:\\ \bf Ch.mo Prof. \\Piero ANGELA}}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.4\textwidth}\raggedleft
+        %Candidato
+    	{\large{Candidato: \\ \bf Luca LAURENTI\\ Mat. 0123456789}}
+    \end{minipage}
+    
+    \vspace{20mm}
+    
+    %Anno Accademico
+    \centering{\large \uppercase{ Anno Accademico 2018/2019 }}
+
+\end{titlepage}
+\begin{dedication}
+Dedicata a coloro che\\ ci provano ogni giorno.
+\end{dedication}
+%Corpo della Tesi
+\tableofcontents
+\clearpage
+\sloppy
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\chapter{Introduction}
+\input{introduction}
+
+\chapter{Project idea}
+\chapter{Starting assets}
+\chapter{Project main steps}
+\chapter{Goals of the project}
+
+
+
+\addcontentsline{toc}{chapter}{Acknowledgements}
+\clearpage
+\printbibliography[
+heading=bibintoc,
+title={References}
+]
+\clearpage
+\listoffigures
+\addcontentsline{toc}{chapter}{\listfigurename}
+\clearpage
+\listoftables
+\addcontentsline{toc}{chapter}{\listtablename}
+\clearpage
+\end{document}
