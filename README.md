@@ -18,6 +18,7 @@ train_model() saves the trained model and returns the path of the trained model.
 TODO:
   - Documentation missing
   - Write discriptions for the functions
+  - cleanup package imports 
   - Implement a efficient file reader, i.e. a way to import different datasets and process these sets.
   - Make predictions on the test-data (visulisation)
   - [maybe split the model and training into two different functions] 
