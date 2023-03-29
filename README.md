@@ -15,6 +15,8 @@ quite good, since our expectation is an accuracy of 70%.
 train_model() saves the trained model and returns the path of the trained model.
 [Note: training this model takes approx. 30 min.]
 
+Dataset: https://www.kaggle.com/datasets/deadskull7/fer2013
+
 TODO:
   - Documentation missing
   - Write discriptions for the functions
