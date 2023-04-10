@@ -1,0 +1,49 @@
+\noindent The project idea is to use \acrshort{ml} algorithms that can recognize emotions in facial images and speech. The system will be developed using software engineering principles such as modular design, testing, and documentation to ensure reliability, scalability, and maintainability. The system will also incorporate user feedback mechanisms to improve accuracy and adaptability to new scenarios. \\
+
+\noindent As discussed the previous chapters, there are plenty of areas in which such a solution can be used. It has then become a challenging problem that this field involves more and more scientists with different specializations \cite{HCSI201451}. %This project aims to create a viable solution that serves as a first step towards a complete solution in a real life problem. \newpage %not true & doubled at next page
+\\\\
+\noindent The goal of the project is to create a viable, working application that can differentiate between emotions using pictures or possibly a video and vocal sound of the user. Thereby, recognizing emotion via speech follows two approaches: 
+\begin{enumerate}
+    \item using \emph{phonological} information (pitch, amplitude, spectral features, etc.)
+    \item using \emph{semantic} information (words, grammar)
+\end{enumerate}
+\newpage
+\noindent More specifically, the goals are as follows:
+
+\begin{itemize}
+
+    \item Create a model that achieves a classification accuracy of 80\% on the given dataset, this can be achieved by grouping the emotions into wider groups, such as positive or negative and 60\% for a more detailed differentiation in emotions
+    \item Make a working application that can handle new inputs.
+    \item Implement a small GUI including a feedback mechanism for the users, which should follow the user experience and the usability principles by showing emojis or a bar chart where the user can specify their emotions. Due to time constraints, it will be kept simple. 
+    \item Possibly combine the two approaches and analyse the pros and cons of this combined approach
+\end{itemize}
+
+\noindent More information about each approach is available in the methodology chapter.
+\\
+
+\begin{comment}
+\noindent
+We will follow two approaches to recognize emotion in speech: 
+\begin{enumerate}
+    \item using \emph{phonological} information (pitch, amplitude, spectral features, etc.)
+    \item using \emph{semantic} information (words, grammar)
+\end{enumerate}
+\noindent
+The working system should then follow this procedure:
+\begin{enumerate}
+    \item Take in a continuous audio stream
+    \item Cut it into samples every $x$ seconds
+    \item Preprocess the samples
+    \item Feed the samples to the neural network models
+    \item Publish classification results continuously 
+    \item At the same time: show user interface to obtain feedback
+    \item Incorporate user feedback
+\end{enumerate}
+\end{comment}
+
+
+
+
+
+
+

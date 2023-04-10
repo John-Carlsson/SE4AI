@@ -8,8 +8,13 @@
 \usepackage{csquotes}
 \usepackage{subfig}
 \usepackage{graphicx}
-\usepackage{indentfirst}
+%\usepackage{indentfirst}
 \usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage[acronym]{glossaries}
+\usepackage{comment}
+\include{acronyms}
+
 \setlength{\parindent}{1cm}
 
 \pagestyle{fancy}
@@ -20,6 +25,7 @@
 \renewcommand{\headrulewidth}{1pt}
 \renewcommand{\footrulewidth}{1pt}
 \usepackage[Conny]{fncychap}
+%\usepackage[style=ieee]{biblatex}
 
 \title{Tesi Magistrale}
 \author{Ivan Colucci}
@@ -36,6 +42,8 @@
    \vspace{\stretch{3}} % space at bottom is three times that at the top
    \clearpage           % finish off the page
   }
+
+\graphicspath{{images/}}
   
 \begin{document}
 %Frontespizio
@@ -48,7 +56,7 @@
     \end{center}
     \begin{figure}[H]
         \centering
-        \includegraphics[width=0.35\textwidth]{logo_unisa}
+        \includegraphics[width=0.25\textwidth]{logo_unisa}
     \end{figure}
     
     \begin{center}
@@ -60,57 +68,80 @@
     	\vspace{3mm}
     \end{center}
     
-    \vspace{15mm}
+    \vspace{7mm}
     \noindent
-    \begin{minipage}[t]{0.47\textwidth}
+    \begin{center}
         %Relatore
-    	{\large{ Relatore:\\\bf Ch.mo Prof. \\Alberto ANGELA}}
+    	{\large{ Authors:\\\bf John Carlsson, 
+                 Philip Le Borne, \\
+                 Sarah Ternus,
+                 Lukas Runt,\\
+                 Cyprien Touron Decourteix,\\
+                 Jana Valentina Stefan,\\
+                 Simon Dannemann,\\
+                 Ergi Kokoshi}}
     	\vspace{12mm}\\
-    	%Correlatore
-    	{\large{ Correlatore:\\ \bf Ch.mo Prof. \\Piero ANGELA}}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[t]{0.4\textwidth}\raggedleft
-        %Candidato
-    	{\large{Candidato: \\ \bf Luca LAURENTI\\ Mat. 0123456789}}
-    \end{minipage}
     
-    \vspace{20mm}
+    \url{https://github.com/John-Carlsson/SE4AI}
+    	
+    \end{center}
+    
+    \hfill
     
     %Anno Accademico
-    \centering{\large \uppercase{ Anno Accademico 2018/2019 }}
+    \centering{\large \uppercase{ Anno Accademico 2022/2023 }}
 
 \end{titlepage}
 \begin{dedication}
 Dedicata a coloro che\\ ci provano ogni giorno.
 \end{dedication}
 %Corpo della Tesi
+
 \tableofcontents
+\thispagestyle{empty}
 \clearpage
-\sloppy
-\hyphenpenalty=10000
-\exhyphenpenalty=10000
-\chapter{Introduction}
-\input{introduction}
 
-\chapter{Project idea}
-\chapter{Starting assets}
-\chapter{Project main steps}
-\chapter{Goals of the project}
-
-
-
-\addcontentsline{toc}{chapter}{Acknowledgements}
-\clearpage
-\printbibliography[
-heading=bibintoc,
-title={References}
-]
-\clearpage
+\pagenumbering{Roman}\thispagestyle{empty}
+\addcontentsline{toc}{chapter}{Acronyms}
+\printnoidxglossary[type=\acronymtype,title=Acronyms,nonumberlist]
+\newpage 
 \listoffigures
 \addcontentsline{toc}{chapter}{\listfigurename}
 \clearpage
-\listoftables
-\addcontentsline{toc}{chapter}{\listtablename}
+%\listoftables
+%\addcontentsline{toc}{chapter}{\listtablename}
+
+%\sloppy
+%\hyphenpenalty=10000
+%\exhyphenpenalty=10000
+
+\newcounter{savepage}
+\setcounter{savepage}{\arabic{page}}
+\pagenumbering{arabic}
+
+%\chapter{Timeplan and Work Distribution}
+%\input{texts/timeplan} 
+
+\chapter{Introduction} \label{chap:introduction}
+\input{texts/introduction}
+
+\chapter{Related Work} \label{chap:related-work}
+\input{texts/Related_work}
+
+\chapter{Project Idea and Goals} \label{chap:project-ideas}
+\input{texts/idea_goals}
+
+\chapter{Methodology} \label{chap:methodology}
+\input{texts/methodology}
+
+%\chapter{Implementation} \label{chap:Implementation}
+
+%\chapter{Conclusion}\label{chap:conclusion}
+%\input{texts/conclusion}
+\cleardoublepage
+\pagenumbering{Roman}
+\setcounter{page}{\thesavepage}
+\printbibliography[heading=bibintoc,title={References}]
 \clearpage
+%\clearpage
 \end{document}
