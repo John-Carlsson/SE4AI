@@ -25,10 +25,11 @@ print('Number of detected faces:', len(faces))
 if len(faces) > 0:
     for i, (x, y, w, h) in enumerate(faces):
         # To draw a rectangle in a face
-        cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 255), 2)
+        #cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 255), 2)
         face = img[y:y + h, x:x + w]
-        cv2.imshow("Cropped Face", face)
-        cv2.imwrite(f'face{i}.jpg', face)
+        gray_image = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+        cv2.imshow("Cropped Face", gray_image)
+        cv2.imwrite(f'face{i}.jpg', gray_image)
         print(f"face{i}.jpg is saved")
 
 # display the image with detected faces
