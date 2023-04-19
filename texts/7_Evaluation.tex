@@ -1,0 +1,21 @@
+After training a model, the next goal is to test the model on new data. For this we can first use the test data and measure the accuracy, precision, recall and F1-Score. The goal is to keep a track of the precision and loss of the model in training. The model must have a loss under a certain value and a precision above a certain value. 
+
+%TO-DO: put here a small paragraph about the use of cross validation that can be used and maybe formula of precision recall etc
+
+During the development, we will also take advantage to unitary test for code coverage, these unitary tests will be needed to validate commit on the source control (GitHub in our case) of the project. Using this test will allow us to have an automated test pipeline that would be use for CI/CD. Additionally to the classic metrics for quality assurance, we allow the person captured by image and speech to input their actual emotion and comparing their actual emotion to the predicted one as will be described in the following section.
+
+
+%Data splitting for Cross-Validation
+%True positive (TP), True negatice (TN), False positive (FP), False negative (FN) when the model is not able to recognize any emotion.
+%\begin{itemize}
+%    \item Accuracy test,
+%    By calculating how accurate is the model, using the following formula, $Accuracy = \frac{TP + TN}{N_{outputs}}$, we can test the success rate of the model.
+%
+%    \item Precision Test
+%    Using the following formula, $Precision = \frac{TP}{TP + FP}$, we can test among the positive answers, the true positive rate.
+%    
+%    \item Sensitivity Test
+%    $Sensitivity = \frac{TP}{TP + FN}$
+%
+%    \item Specificity Test
+%    $Sensitivity = \frac{TN}{TN + FP}$

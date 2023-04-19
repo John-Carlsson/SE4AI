@@ -1,0 +1,28 @@
+\section{\acrlong{ser}}
+\subsection{Data Collection}
+% Jana's task:
+To train the model, we decided to use the crowd sourced CREMA-D data \cite{cremad} set that is downloadable from kaggle.com under the Open Data Commons Attribution License (ODC-By). This license allows to copy, distribute and use the database, furthermore to produce works from the database and to modify, transform and build upon it \cite{odc-by}. The data set consists of 7,442 audio clips with the following characteristics: 
+\begin{itemize}
+    \item 12 different sentences
+    \item six different emotions: Anger, Disgust, Fear, Happy, Neutral, Sad
+    \item four different emotion levels: Low, Medium, High, Unspecified
+    \item number of actors: 91
+    \begin{itemize}
+        \item age: ranging from 20 to 74 years
+        \item ethnicity: African American, Asian, Caucasian, Hispanic, Unspecified
+    \end{itemize}
+\end{itemize}
+
+
+
+\subsection{Data Preprocessing}
+% Jana's task:
+To increase the number and variety of data samples and to ensure robustness of the system to non-trivial scenarios, we will perform data augmentation in the form of random pitch shifts and time stretch transformations. Here, the python libraries Audiomentations and Librosa are useful. Both libraries are open-source and available for free. 
+
+Then, we will calculate spectrograms from the raw audio samples by running a Fast Fourier Transform (FFT) algorithm. Here, again Librosa comes in handy. The spectrograms can then be fed into the neural networks.  \\
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\textwidth]{images/ser-preprocessing.png}\\
+\caption{Preprocessing for Training.}\label{fig:ser_preprocessing}
+\end{figure}

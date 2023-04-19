@@ -14,6 +14,7 @@
 \usepackage[acronym]{glossaries}
 \usepackage{comment}
 \include{acronyms}
+\usepackage{amsfonts}
 
 \setlength{\parindent}{1cm}
 
@@ -123,21 +124,41 @@ Dedicata a coloro che\\ ci provano ogni giorno.
 %\input{texts/timeplan} 
 
 \chapter{Introduction} \label{chap:introduction}
-\input{texts/introduction}
+\input{texts/1_Introduction}
 
 \chapter{Related Work} \label{chap:related-work}
-\input{texts/Related_work}
+\input{texts/2_Related_work}
 
-\chapter{Project Idea and Goals} \label{chap:project-ideas}
-\input{texts/idea_goals}
+\chapter{Project Idea} \label{chap:project-ideas}
+\input{texts/3_Project-Idea}
 
-\chapter{Methodology} \label{chap:methodology}
-\input{texts/methodology}
+\chapter{Problem Specification and Verification}\label{chap:problem-spec}
+\input{texts/4_problem_spec}
 
-%\chapter{Implementation} \label{chap:Implementation}
+\chapter{Methodological Steps} \label{chap:methodology}
+% This is the chapter 4 that the teacher refers to
+\input{texts/5_Methodology}
+
+\chapter{Data Collection and Preprocessing}\label{chap:Data}
+\input{texts/face/1_data-fer}
+\input{texts/speech/1_data-ser}
+
+\chapter{Model Implementation and Training}\label{chap:Implementation}
+\input{texts/face/2_model-fer}
+\input{texts/speech/2_model-ser}
+%\input{texts/combined/model-combined}
+
+\chapter{Model Evaluation}\label{chap:Evaluation}
+%\input{texts/face/3_eval-fer}
+%\input{texts/speech/3_eval-ser}
+\input{texts/7_Evaluation}
+
+\chapter{System Deployment and Improvement}\label{chap:final-application}
+\input{texts/6_System-implementation}
+
 
 %\chapter{Conclusion}\label{chap:conclusion}
-%\input{texts/conclusion}
+%\input{texts/8_conclusion}
 \cleardoublepage
 \pagenumbering{Roman}
 \setcounter{page}{\thesavepage}
