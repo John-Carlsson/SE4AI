@@ -1,6 +1,8 @@
 from tkinter import *
 import cv2
 from PIL import Image, ImageTk
+#import keras
+
 
 class Camera:
     def __init__(self, width, height):
@@ -20,6 +22,7 @@ class Camera:
 class App:
     def __init__(self, master):
         self.master = master
+        #self.model = keras.models.load_model(path to model)
         self.current_frame = None  
         self.master.bind('<Escape>', lambda e: self.master.quit())
         self.camera = Camera(400, 400)
@@ -54,28 +57,58 @@ class App:
             self.label_widget.after(10, self.show_video)
 
     def good_feedback(self):
-        self.current_frame = None  # Disable capturing
+        self.current_frame = None  # Disable stillframe
         self.show_video()
 
     def bad_feedback(self):
-        self.current_frame = None  # Disable capturing
+        self.current_frame = None  # Disable stillframe
         self.show_video()
 
     def run_analysis(self):
         self.current_frame = self.camera.capture_frame()  # capture a frame
+        self.detect_face()
         self.show_video()
 
-        # lucas code
-
-
-        # Network
+        self.analyse_face()
 
 
     def release(self):
         self.camera.release()
+
+    
+    def detect_face(self):
+        # Convert the image to grayscale
+        gray = cv2.cvtColor(self.current_frame, cv2.COLOR_BGR2GRAY)
+
+        # Load the Haar cascade for face detection
+        face_cascade = cv2.CascadeClassifier('image_preprocessing/haarcascade_frontalface_alt.xml')
+
+        # Detect faces in the image
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=4)
+
+        if len(faces) > 0:
+            # Get the first detected face So that if multiple persons in frame we just look at one
+            (x, y, w, h) = faces[0]
+
+            # Extract the region of interest containing the face
+            face_roi = self.current_frame[y:y+h, x:x+w]
+
+            # Display picture with a frame around the face
+            self.current_frame = cv2.rectangle(self.current_frame, (x, y), (x + w, y + h), (0, 255, 255), 2)
+
+            # Convert the region to grayscale adn save the face
+            self.face = cv2.cvtColor(face_roi, cv2.COLOR_BGR2GRAY)
+        else:
+            self.text.insert(END, "No face detected\n")
+            
+
+    def analyse_face(self):
+        result = self.model(self.face)
+        self.text.insert(END, self.text.insert(END, result + '\n'))
 
 if __name__ == '__main__':
     root = Tk()
     app = App(root)
     root.mainloop()
     app.release()
+    

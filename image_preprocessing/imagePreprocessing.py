@@ -9,13 +9,13 @@ How to import OpenCV to PyCharm
 import cv2
 
 # read the input image
-img = cv2.imread('picture1.jpg')
+img = cv2.imread('image_preprocessing/picture1.jpg')
 
 # convert to grayscale of each frames
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 # read the haarcascade to detect the faces in an image
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
+face_cascade = cv2.CascadeClassifier('image_preprocessing/haarcascade_frontalface_alt.xml')
 
 # detects faces in the input image
 faces = face_cascade.detectMultiScale(gray, 1.3, 4)
@@ -25,7 +25,7 @@ print('Number of detected faces:', len(faces))
 if len(faces) > 0:
     for i, (x, y, w, h) in enumerate(faces):
         # To draw a rectangle in a face
-        #cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 255), 2)
+        cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 255), 2)
         face = img[y:y + h, x:x + w]
         gray_image = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
         cv2.imshow("Cropped Face", gray_image)
