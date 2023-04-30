@@ -5,6 +5,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+### macOS ###
+*.DS_Store
+.AppleDouble
+.LSOverride
+
 # C extensions
 *.so
 
