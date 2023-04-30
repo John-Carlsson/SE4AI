@@ -24,15 +24,23 @@ from tensorflow import keras
 from tensorflow.keras import optimizers
 from tensorflow.keras.optimizers import schedules
 
+import fetch_dataset
+
 
 ########################
 # for testing purposes #
 ########################
 
-default_path = '/Users/psleborne/Documents/Vorlesungen/Skript/SoftwareEngAI/Emotional_Recognition/Datasets/data2/fer2013.csv'
-path2 = '/Users/psleborne/Documents/Vorlesungen/Skript/SoftwareEngAI/Emotional_Recognition/Datasets/data2'
 
-default_data = pd.read_csv(path2 + '/fer2013.csv')
+#default_path = '/Users/psleborne/Documents/Vorlesungen/Skript/SoftwareEngAI/Emotional_Recognition/Datasets/data2/fer2013.csv'
+#path2 = '/Users/psleborne/Documents/Vorlesungen/Skript/SoftwareEngAI/Emotional_Recognition/Datasets/data2'
+
+fetch_dataset.download()
+default_path = 'fer2013.csv'
+
+
+#default_data = pd.read_csv(path2 + '/fer2013.csv')
+default_data = pd.read_csv(default_path)
 emotion_map_default = {0: 'Angry', 1: 'Digust', 2: 'Fear', 3: 'Happy', 4: 'Sad', 5: 'Surprise', 6: 'Neutral'}
 emotion_counts = default_data['emotion'].value_counts(sort=False).reset_index()
 emotion_counts.columns = ['emotion', 'number']

@@ -6,10 +6,7 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 import matplotlib
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
-
 import file_import
-import nnmodel
-
 import keras
 from keras.utils import to_categorical
 from keras.callbacks import EarlyStopping
@@ -26,10 +23,14 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from keras.layers import LeakyReLU
 
+import nnmodel
+
+
 matplotlib.use('TkAgg')
 
-path1 = '/Users/psleborne/Documents/Vorlesungen/Skript/SoftwareEngAI/Emotional_Recognition/Datasets/data1'
-path2 = '/Users/psleborne/Documents/Vorlesungen/Skript/SoftwareEngAI/Emotional_Recognition/Datasets/data2'
+#path1 = '/Users/psleborne/Documents/Vorlesungen/Skript/SoftwareEngAI/Emotional_Recognition/Datasets/data1'
+#path2 = '/Users/psleborne/Documents/Vorlesungen/Skript/SoftwareEngAI/Emotional_Recognition/Datasets/data2'
+
 
 #data = pd.read_csv('/Users/psleborne/Documents/Vorlesungen/Skript/SoftwareEngAI/Emotional_Recognition/Datasets/data2/fer2013.csv')
 #emotion_map = {0: 'Angry', 1: 'Digust', 2: 'Fear', 3: 'Happy', 4: 'Sad', 5: 'Surprise', 6: 'Neutral'}
@@ -60,13 +61,14 @@ def row2image(row):
 
 
 def main():
-    print("Using Tensorflow version: ", tf.__version__)
+    # print("Using Tensorflow version: ", tf.__version__)
     # Tensorflow: create a TF dataset from folder
 
     # For performance testing: (This disables the usage of the GPU)
     # tf.config.set_visible_devices([], 'GPU')
 
-    print(os.listdir(path2))
+    #print(os.listdir(path2))
+
     # check data shape
     #data.shape
     #data.head(5)
@@ -93,17 +95,6 @@ def main():
     new_model = nnmodel.NNmodel('sequential', num_classes, num_epochs, batch_size, num_features, width, height)
     model_path = new_model.train_model()
     print(model_path)
-
-
-
-
-
-
-
-
-
-
-
 
 
 
