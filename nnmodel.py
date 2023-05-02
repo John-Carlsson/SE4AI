@@ -1,4 +1,4 @@
-import file_import
+#import file_import
 import tensorflow as tf
 import numpy as np
 import matplotlib
@@ -49,7 +49,7 @@ emotion_labels_default = ['Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Surprise'
 
 ##########################
 
-
+# NOTE: ImageDataGenerator is deprecated
 data_generator = ImageDataGenerator(
     featurewise_center=False,
     featurewise_std_normalization=False,
@@ -75,6 +75,11 @@ class NNmodel:
         self.emotion_map = emotion_map
         self.emotion_labels = emotion_labels
 
+
+    # CRNO stands for Convert, Reshape, Normalize, One-hot encoding
+    # (i) convert strings to lists of integers
+    # (ii) reshape and normalise grayscale image with 255.0
+    # (iii) one-hot encoding label, e.g. class 3 to [0,0,0,1,0,0,0]
     def CRNO(self, df, dataName):
         df['pixels'] = df['pixels'].apply(lambda pixel_sequence: [int(pixel) for pixel in pixel_sequence.split()])
         data_X = np.array(df['pixels'].tolist(), dtype='float32').reshape(-1, self.width, self.height, 1) / 255.0
@@ -99,6 +104,13 @@ class NNmodel:
         setup_axe(axes[1], data_val, 'validation')
         setup_axe(axes[2], data_test, 'test')
         plt.show()
+
+    def process_split_data(self):
+        data_train, data_val, data_test = self.split_data()
+        train_X, train_Y = self.CRNO(data_train, "train")  # training data
+        val_X, val_Y = self.CRNO(data_val, "val")  # validation data
+        test_X, test_Y = self.CRNO(data_test, "test")  # test data
+        return train_X, train_Y, val_X, val_Y, test_X, test_Y
 
     def train_model(self):
         model_name = self.model_name
@@ -184,13 +196,10 @@ class NNmodel:
                             callbacks=[cp, cpl, es],
                             validation_data=(val_X, val_Y))
         model.save('./' + self.model_name + '_model_c.h5')
-        return './model_c.h5'
+        return './' + self.model_name + '_model_c.h5'
 
-
-# CRNO stands for Convert, Reshape, Normalize, One-hot encoding
-# (i) convert strings to lists of integers
-# (ii) reshape and normalise grayscale image with 255.0
-# (iii) one-hot encoding label, e.g. class 3 to [0,0,0,1,0,0,0]
+    def nload_model(self, path):
+        return tf.keras.models.load_model(path)
 
 
 
