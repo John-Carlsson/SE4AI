@@ -1,12 +1,18 @@
 from tkinter import *
 import cv2
+import keras
+import numpy as np
 from PIL import Image, ImageTk
-#import keras
+import platform
+
 
 
 class Camera:
     def __init__(self, width, height):
-        self.vid = cv2.VideoCapture(0)
+        if platform.processor() == 'arm':
+            self.vid = cv2.VideoCapture(1)
+        else:
+            self.vid = cv2.VideoCapture(0)
         self.width = width
         self.height = height
         self.vid.set(cv2.CAP_PROP_FRAME_WIDTH, width)
@@ -22,7 +28,7 @@ class Camera:
 class App:
     def __init__(self, master):
         self.master = master
-        #self.model = keras.models.load_model(path to model)
+        self.model = keras.models.load_model('./sequential_model_c.h5')
         self.current_frame = None  
         self.master.bind('<Escape>', lambda e: self.master.quit())
         self.camera = Camera(400, 400)
@@ -39,6 +45,7 @@ class App:
 
         self.text = Text(self.master, height=20, width=100, bg='skyblue')
         self.text.pack(side='top')
+        self.face = None
 
         self.show_video()
 
@@ -96,19 +103,24 @@ class App:
             # Display picture with a frame around the face
             self.current_frame = cv2.rectangle(self.current_frame, (x, y), (x + w, y + h), (0, 255, 255), 2)
 
-            # Convert the region to grayscale adn save the face
-            self.face = cv2.cvtColor(face_roi, cv2.COLOR_BGR2GRAY)
+            # Convert the region to (48 x 48) grayscale and save the face
+            dim = (48, 48)
+            self.face = cv2.resize(cv2.cvtColor(face_roi, cv2.COLOR_BGR2GRAY), dim, interpolation = cv2.INTER_AREA)
         else:
             self.text.insert(END, "No face detected\n")
             
 
     def analyse_face(self):
-        result = self.model(self.face)
-        self.text.insert(END, self.text.insert(END, result + '\n'))
+        img_batch = np.expand_dims(self.face, axis=0)
+        result = self.model.predict(np.asarray(img_batch))
+        print("result = ", result)
+        # result = self.model(self.face)
+        self.text.insert(END, self.text.insert(END, result + '\n')) #<- there's a bug in here
 
 if __name__ == '__main__':
     root = Tk()
     app = App(root)
     root.mainloop()
     app.release()
+
     
