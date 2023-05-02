@@ -108,14 +108,25 @@ class App:
             self.face = cv2.resize(cv2.cvtColor(face_roi, cv2.COLOR_BGR2GRAY), dim, interpolation = cv2.INTER_AREA)
         else:
             self.text.insert(END, "No face detected\n")
-            
+
+    def to_string(self, result):
+        emotion_labels = ['Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+        s = ''
+        plist = result[0]
+        for i in range(7):
+            p = round(plist[i], 3) * 100
+            s += emotion_labels[i] + ': '
+            s += str(p) + '%'
+            s += '\n'
+        return s
 
     def analyse_face(self):
         img_batch = np.expand_dims(self.face, axis=0)
         result = self.model.predict(np.asarray(img_batch))
         print("result = ", result)
+        print(self.to_string(result))
         # result = self.model(self.face)
-        self.text.insert(END, self.text.insert(END, result + '\n')) #<- there's a bug in here
+        self.text.insert(END, self.text.insert(END, self.to_string(result) + '\n'))
 
 if __name__ == '__main__':
     root = Tk()
