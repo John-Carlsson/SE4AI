@@ -114,7 +114,7 @@ class App:
         s = ''
         plist = result[0]
         for i in range(7):
-            p = round(plist[i], 3) * 100
+            p = round(plist[i] * 100, 3)
             s += emotion_labels[i] + ': '
             s += str(p) + '%'
             s += '\n'
