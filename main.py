@@ -109,11 +109,12 @@ def main():
     model.summary()
     #Testing model on test-dataset
     train_X, train_Y, val_X, val_Y, test_X, test_Y = new_model.process_split_data()
-    test_loss, test_acc = model.evaluate(test_X, test_Y)
-    print(test_acc)
+    # test_loss, test_acc = model.evaluate(test_X, test_Y)
+    # print(test_acc)
     #selecting a random image from test-set
     selected_img = np.random.randint(0, 3589)
     features = test_X[selected_img]
+    print("features = ", features)
     img = np.array(features)
     img = img.reshape(48, 48)
     image1 = np.zeros((48, 48, 3))

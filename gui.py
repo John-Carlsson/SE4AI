@@ -4,6 +4,8 @@ import keras
 import numpy as np
 from PIL import Image, ImageTk
 import platform
+import data_collector as dc
+from functools import partial
 
 
 
@@ -104,9 +106,14 @@ class App:
             # Display picture with a frame around the face
             self.current_frame = cv2.rectangle(self.current_frame, (x, y), (x + w, y + h), (0, 255, 255), 2)
 
+            n = dc.collector()
+            # TODO: emotion input, defaut is set to 1
+            e = 1
+
             # Convert the region to (48 x 48) grayscale and save the face
             dim = (48, 48)
-            self.face = cv2.resize(cv2.cvtColor(face_roi, cv2.COLOR_BGR2GRAY), dim, interpolation = cv2.INTER_AREA)
+            self.face = cv2.resize(cv2.cvtColor(face_roi, cv2.COLOR_BGR2GRAY), dim, interpolation = cv2.INTER_AREA)/255
+            n.save_img(self.face, e)
             cv2.imwrite('./face_test.png', self.face)
             self.analyse = True
         else:
