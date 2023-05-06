@@ -32,6 +32,7 @@ class App:
         self.current_frame = None  
         self.master.bind('<Escape>', lambda e: self.master.quit())
         self.camera = Camera(400, 400)
+        self.analyse = False
 
         self.label_widget = Label(self.master)
         self.label_widget.pack(side='left')
@@ -75,8 +76,8 @@ class App:
         self.current_frame = self.camera.capture_frame()  # capture a frame
         self.detect_face()
         self.show_video()
-
-        self.analyse_face()
+        if self.analyse:
+            self.analyse_face()
 
 
     def release(self):
@@ -106,8 +107,11 @@ class App:
             # Convert the region to (48 x 48) grayscale and save the face
             dim = (48, 48)
             self.face = cv2.resize(cv2.cvtColor(face_roi, cv2.COLOR_BGR2GRAY), dim, interpolation = cv2.INTER_AREA)
+            cv2.imwrite('./face_test.png', self.face)
+            self.analyse = True
         else:
             self.text.insert(END, "No face detected\n")
+            self.analyse = False
 
     def to_string(self, result):
         emotion_labels = ['Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
