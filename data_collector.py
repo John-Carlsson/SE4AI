@@ -53,6 +53,7 @@ class collector:
             writer.writerow(df)
 
 if __name__ == '__main__':
+    t = ''
     # Testing:
     # img_path = '/Users/psleborne/IdeaProjects/SE4AI/face_test.jpg'
     # n = collector()

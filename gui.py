@@ -5,7 +5,13 @@ import numpy as np
 from PIL import Image, ImageTk
 import platform
 import data_collector as dc
-from functools import partial
+import pyautogui
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import pandas as pd
+# from PyQt5 import QtCore, QtWidgets
+
+
 
 
 
@@ -28,16 +34,42 @@ class Camera:
         self.vid.release()
 
 class App:
+
     def __init__(self, master):
         self.master = master
         self.model = keras.models.load_model('./sequential_model_c.h5')
         self.current_frame = None  
         self.master.bind('<Escape>', lambda e: self.master.quit())
-        self.camera = Camera(400, 400)
+        self.width, self.height= pyautogui.size()
+        self.camera = Camera(self.width/5, self.height/5)
         self.analyse = False
+
+        self.angry = 0.0
+        self.disgust = 0.0
+        self.fear = 0.0
+        self.happy = 0.0
+        self.sad = 0.0
+        self.surprised = 0.0
+        self.neutral = 0.0
 
         self.label_widget = Label(self.master)
         self.label_widget.pack(side='left')
+
+
+        self.data = {'emotions': ['Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral'],
+                     'predictions': [self.angry, self.disgust, self.fear, self.happy, self.sad, self.surprised, self.neutral]}
+        figure1 = plt.Figure(figsize=(6, 5), dpi=100)
+        self.df = pd.DataFrame(self.data)
+
+        self.ax1 = figure1.add_subplot(111)
+        self.bar1 = FigureCanvasTkAgg(figure1, root)
+        self.bar1.get_tk_widget().pack(side='left', fill='both')
+        self.df.plot(kind='bar', legend=True, ax=self.ax1)
+        # self.df.xticks([0,1,2,3,4,5,6], ['Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral'])
+        self.ax1.set_xticks([0,1,2,3,4,5,6])
+        self.ax1.set_xticklabels(['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral'], rotation='vertical', fontsize=8)
+        self.ax1.set_title('Predictions')
+        self.ax1.set_ylim([0, 100])
 
         self.good_button = Button(self.master, text='Correct', font=('arial', 25), fg='green', command=self.good_feedback)
         self.bad_button = Button(self.master, text='False', font=('arial', 25), fg='red', command=self.bad_feedback)
@@ -107,7 +139,7 @@ class App:
             self.current_frame = cv2.rectangle(self.current_frame, (x, y), (x + w, y + h), (0, 255, 255), 2)
 
             n = dc.collector()
-            # TODO: emotion input, defaut is set to 1
+            # TODO: emotion input, default is set to 1
             e = 1
 
             # Convert the region to (48 x 48) grayscale and save the face
@@ -115,6 +147,7 @@ class App:
             self.face = cv2.resize(cv2.cvtColor(face_roi, cv2.COLOR_BGR2GRAY), dim, interpolation = cv2.INTER_AREA)/255
             n.save_img(self.face, e)
             cv2.imwrite('./face_test.png', self.face)
+            # print(self.width, self.height)
             self.analyse = True
         else:
             self.text.insert(END, "No face detected\n")
@@ -130,10 +163,34 @@ class App:
             s += str(p) + '%'
             s += '\n'
         return s
+    def update_predictions(self, results):
+        self.angry = results[0]
+        self.disgust = results[1]
+        self.fear = results[2]
+        self.happy = results[3]
+        self.sad = results[4]
+        self.surprised = results[5]
+        self.neutral = results[6]
+
+    def update_plot(self):
+        self.data = {'emotions': ['Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral'],
+                     'predictions': [self.angry, self.disgust, self.fear, self.happy, self.sad, self.surprised, self.neutral]}
+        # print("updated data: \n", self.data)
+        self.df = pd.DataFrame(self.data)
+        self.df.plot(kind='bar', legend=False, ax=self.ax1)
+        #TODO: This is not optimal, should be able to define axis once and not redefine them on every update.
+        self.ax1.set_xticks([0,1,2,3,4,5,6])
+        self.ax1.set_xticklabels(['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral'], rotation='vertical', fontsize=8)
+        self.bar1.draw()
+
+
+
 
     def analyse_face(self):
         img_batch = np.expand_dims(self.face, axis=0)
         result = self.model.predict(np.asarray(img_batch))
+        self.update_predictions(result[0]*100)
+        self.update_plot()
         print("result = ", result)
         print(self.to_string(result))
         # result = self.model(self.face)
