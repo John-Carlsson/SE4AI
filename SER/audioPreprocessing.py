@@ -110,6 +110,37 @@ def adding_padding():
             os.remove(out_path)
         sf.write(out_path, padded_audio, sr)
 
+
+def create_mel_spectrogram():
+    mel_spectrograms = []
+
+    for file_name in crema_path:
+        file_path = os.path.join(Crema, file_name)
+        y, sr = load_audio(file_path)
+
+        mel_spectrogram = librosa.feature.melspectrogram(y=y, sr=sr)
+        mel_spectrogram_db = librosa.power_to_db(mel_spectrogram, ref=np.max)
+
+        # define x-axis (time) and y-axis (frequency) values
+        frames = range(mel_spectrogram_db.shape[1])
+        t = librosa.frames_to_time(frames)
+        f = librosa.mel_frequencies(n_mels=mel_spectrogram_db.shape[0], fmin=0, fmax=sr / 2)
+
+        mel_spectrograms.append(mel_spectrogram_db)
+
+
+        #display of the spectorgram if necessary
+        #librosa.display.specshow(mel_spectrogram_db, sr=sr, x_axis='time', y_axis='mel', x_coords=t, y_coords=f)
+        #plt.colorbar(format='%+2.0f dB')
+        #plt.title('Mel Spectrogram')
+        #plt.show()
+
+
+    #irgendwie noch probleme mit dem convert to np array
+    #mel_spectrograms_array = np.array(mel_spectrograms)
+
+
+
 if __name__ == "__main__":
     display_dataset()
     stretching_time()
