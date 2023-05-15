@@ -71,7 +71,19 @@ def stretching_time():
             os.remove(out_path)
         sf.write(out_path, stretched_audio, sr)
 
+def pitching_voice():
 
+    for file_name in crema_path:
+        file_path = os.path.join(Crema, file_name)
+
+        y, sr = load_audio(file_path)
+        pitched_audio = librosa.effects.pitch_shift(y=y, sr=sr, n_steps=random.randint(1, 6))
+        new_file_name = os.path.basename(file_path)
+        out_file_name = os.path.splitext(new_file_name)[0] + '_pitched.wav'
+        out_path = os.path.join(pitched_audios_paths, out_file_name)
+        if os.path.exists(out_path):
+            os.remove(out_path)
+        sf.write(out_path, pitched_audio, sr)
 
 
 if __name__ == "__main__":
