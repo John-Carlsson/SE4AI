@@ -85,6 +85,30 @@ def pitching_voice():
             os.remove(out_path)
         sf.write(out_path, pitched_audio, sr)
 
+def adding_padding():
+
+
+    target_duration = 6.0
+
+    for file_name in crema_path:
+        file_path = os.path.join(Crema, file_name)
+        y, sr = load_audio(file_path)
+
+        #convert the desired duration from seconds to samples and then we know how many samples are missing
+        target_length = int(target_duration * sr)
+
+        current_length = len(y)
+        padding_length = max(0, target_length - current_length)
+        padding = np.zeros(padding_length)
+
+        padded_audio = np.concatenate((y, padding))
+
+        new_file_name = os.path.basename(file_path)
+        out_file_name = os.path.splitext(new_file_name)[0] + '_padded.wav'
+        out_path = os.path.join(padded_audios_paths, out_file_name)
+        if os.path.exists(out_path):
+            os.remove(out_path)
+        sf.write(out_path, padded_audio, sr)
 
 if __name__ == "__main__":
     display_dataset()
