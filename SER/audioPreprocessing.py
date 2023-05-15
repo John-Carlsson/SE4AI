@@ -11,6 +11,10 @@ Crema = "AudioWAV"
 crema_path = os.listdir(Crema)
 
 
+stretched_audios_paths = "stretched_audios"
+pitched_audios_paths = "pitched_audios"
+padded_audios_paths = "padded_audios"
+
 def display_dataset():
     file_emotion = []
     file_path = []
@@ -47,3 +51,29 @@ def display_dataset():
     # display(Crema_df)
 
     return path_df, emotion_df
+
+
+def load_audio(file_path):
+    y, sr = librosa.load(file_path)
+    return y, sr
+
+
+def stretching_time():
+
+    for file_name in crema_path:
+        file_path = os.path.join(Crema, file_name)
+        y, sr = load_audio(file_path)
+        stretched_audio = librosa.effects.time_stretch(y=y, rate=random.randint(1, 3))
+        new_file_name = os.path.basename(file_path)
+        out_file_name = os.path.splitext(new_file_name)[0] + '_stretched.wav'
+        out_path = os.path.join(stretched_audios_paths, out_file_name)
+        if os.path.exists(out_path):
+            os.remove(out_path)
+        sf.write(out_path, stretched_audio, sr)
+
+
+
+
+if __name__ == "__main__":
+    display_dataset()
+    stretching_time()
