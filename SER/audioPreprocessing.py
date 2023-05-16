@@ -141,6 +141,6 @@ def create_mel_spectrogram():
 
 
 
-if __name__ == "__main__":
-    display_dataset()
-    stretching_time()
+#if __name__ == "__main__":
+
+
