@@ -99,8 +99,10 @@ def calculate_spectrograms(data: pd.DataFrame, padded=True, n_fft=1024, hop_leng
         stft_mag_db = librosa.amplitude_to_db(stft_mag, ref=np.max)
         # Turn to absolute values
         mag_spec = np.abs(stft_mag_db) 
+        # Reshape to 3D, where the third dimension is number of channels (here: 1)
+        reshaped = np.reshape(mag_spec, (*mag_spec.shape, 1))
 
-        data_spectrograms.append(mag_spec)
+        data_spectrograms.append(reshaped)
 
     spectrogram_shape = (mag_spec.shape[0], mag_spec.shape[1], 1)
     print("The shape of the spectrograms: ", spectrogram_shape)
@@ -117,7 +119,20 @@ def store_preprocessed_data(data: pd.DataFrame, path=default_path_store):
 
 
 def load_spectrograms(path=default_path_store):
-    return pd.read_pickle(path)
+    """
+    Loads the spectrograms from a pickle file. Extracts the shape of the first spectrogram in the dataframe.
+
+    Returns
+    -------
+    spec_def : pandas dataframe
+        columns = "Data Sample", "Name", "Emotion Class", "Emotion Vector", "Padded Sample", "Spectrogram"
+    spec_shape : tuple
+        the three dimensional shape of the first spectrogram in the dataframe: (number of frequency bins, number of time frames, number of channels)
+        
+    """
+    spec_df = pd.read_pickle(path)
+    spec_shape = (spec_df["Spectrogram"].iloc[0].shape[0], spec_df["Spectrogram"].iloc[0].shape[1], 1)
+    return spec_df, spec_shape
 
 
 

@@ -107,12 +107,15 @@ class CRNN_LSTM:
 
 
 
-    def predict(self, data, single_sample=True):
+    def predict(self, data, single_sample: bool):
         if single_sample:
-            return self.model(data)
+            probs = self.model(tf.convert_to_tensor(data[np.newaxis, ...]))
         else:
-            return self.model.predict(data)
+            probs = self.model.predict(tf.convert_to_tensor(list(data)))
         
+        emotion_indeces = np.argmax(probs, axis=1)
+        emotion_labels = [list(emotion_hot_encode.keys())[ind] for ind in emotion_indeces]
+        return probs, emotion_labels
         
 
 
@@ -120,7 +123,3 @@ class CRNN_LSTM:
         self.model.save(self.path)
         print("Model %s has been stored in %s. "%(self.model_name, self.path))
 
-
-if __name__ == "__main__":
-    model = CRNN_LSTM()
-    model.store_model()
