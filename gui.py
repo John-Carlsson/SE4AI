@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 import platform
 import data_collector as dc
 from functools import partial
-
+from keras.optimizers import Adam
 
 
 class Camera:
@@ -31,10 +31,9 @@ class App:
     def __init__(self, master):
         self.master = master
         self.model = keras.models.load_model('./sequential_model_c.h5')
-        self.current_frame = None  
+        self.current_frame = None
         self.master.bind('<Escape>', lambda e: self.master.quit())
         self.camera = Camera(400, 400)
-        self.analyse = False
 
         self.label_widget = Label(self.master)
         self.label_widget.pack(side='left')
@@ -53,7 +52,7 @@ class App:
         self.show_video()
 
     def show_video(self):
-        if self.current_frame is not None:  # if we have a captured frame, display it
+        if self.current_frame:  # if we have a captured frame, display it
             captured_image = Image.fromarray(self.current_frame)
             photo_image = ImageTk.PhotoImage(image=captured_image)
             self.label_widget.photo_image = photo_image
@@ -67,18 +66,44 @@ class App:
             self.label_widget.after(10, self.show_video)
 
     def good_feedback(self):
-        self.current_frame = None  # Disable stillframe
-        self.show_video()
+        if self.current_frame is not None:
+            self.feedback = 1
+            self.current_frame = None  # Disable stillframe
+            self.show_video()
+            self.update_model_with_feedback()
 
     def bad_feedback(self):
-        self.current_frame = None  # Disable stillframe
-        self.show_video()
+        if self.current_frame is not None:
+            self.current_frame = None  # Disable stillframe
+            self.show_video()
+            self.update_model_with_feedback()
+            # Since we dont know what is wrong we can't update with any precise labels
+            # this becomes very impractible with more than 2 labels
+            # so this is just for possible use in for example a binary classifier
+            
 
+    def update_model_with_feedback(self):
+        if self.feedback is not None:
+            img_batch = np.expand_dims(self.face, axis=0)
+            
+            idx = np.where(max(self.result[0]) == self.result[0])
+            self.result[0] = [0 for i in range(len(self.result[0]))]
+            self.result[0][idx] = 1
+
+            feedback_data = self.result
+
+            optimizer = Adam(lr=0.001)
+            self.model.compile(loss='binary_crossentropy', optimizer=optimizer)
+            self.model.fit(img_batch, feedback_data, epochs=1)
+
+        self.feedback = None
+
+    # Capture button
     def run_analysis(self):
         self.current_frame = self.camera.capture_frame()  # capture a frame
         self.detect_face()
         self.show_video()
-        if self.analyse:
+        if self.current_frame:
             self.analyse_face()
 
 
@@ -106,38 +131,26 @@ class App:
             # Display picture with a frame around the face
             self.current_frame = cv2.rectangle(self.current_frame, (x, y), (x + w, y + h), (0, 255, 255), 2)
 
-            n = dc.collector()
-            # TODO: emotion input, defaut is set to 1
-            e = 1
-
-            # Convert the region to (48 x 48) grayscale and save the face
             dim = (48, 48)
             self.face = cv2.resize(cv2.cvtColor(face_roi, cv2.COLOR_BGR2GRAY), dim, interpolation = cv2.INTER_AREA)/255
-            n.save_img(self.face, e)
-            cv2.imwrite('./face_test.png', self.face)
-            self.analyse = True
+            
+            
         else:
             self.text.insert(END, "No face detected\n")
-            self.analyse = False
+            self.current_frame = None
 
-    def to_string(self, result):
+    def to_string(self):
         emotion_labels = ['Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
-        s = ''
-        plist = result[0]
-        for i in range(7):
-            p = round(plist[i] * 100, 3)
-            s += emotion_labels[i] + ': '
-            s += str(p) + '%'
-            s += '\n'
+        s = max(zip(self.result[0],emotion_labels))[1]
         return s
 
     def analyse_face(self):
         img_batch = np.expand_dims(self.face, axis=0)
-        result = self.model.predict(np.asarray(img_batch))
-        print("result = ", result)
-        print(self.to_string(result))
+        self.result = self.model.predict(np.asarray(img_batch)) # what is the output?
+        print("result = ", self.result)
+
         # result = self.model(self.face)
-        self.text.insert(END, self.text.insert(END, self.to_string(result) + '\n'))
+        self.text.insert(END, self.text.insert(END, self.to_string() + '\n'))
 
 if __name__ == '__main__':
     root = Tk()

@@ -52,7 +52,7 @@ class collector:
             df = [str(e), self.string_builder(list(np.concatenate(image).flat)), datatype]
             writer.writerow(df)
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
     # Testing:
     # img_path = '/Users/psleborne/IdeaProjects/SE4AI/face_test.jpg'
     # n = collector()
