@@ -10,7 +10,15 @@ from keras.optimizers import Adam
 
 
 class Camera:
-    def __init__(self, width, height):
+
+    def __init__(self, width:int, height:int):
+        """ Init of the camera class that can capture a frame
+
+        Args:
+            width (int): [set the width of the camera]
+            height (int): [set the width of the camera]
+        """
+
         if platform.processor() == 'arm':
             self.vid = cv2.VideoCapture(1)
         else:
@@ -21,6 +29,11 @@ class Camera:
         self.vid.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
     def capture_frame(self):
+        """Capture a frame from the camera.
+
+        Returns:
+            numpy.ndarray: Captured frame as an RGB image array.
+        """
         _, frame = self.vid.read()
         return cv2.flip(cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA), 1)
 
@@ -28,9 +41,19 @@ class Camera:
         self.vid.release()
 
 class App:
-    def __init__(self, master):
+    """The GUI app with three windows: camera, output, and buttons."""
+
+    def __init__(self, master, model, face_model = cv2.CascadeClassifier('image_preprocessing/haarcascade_frontalface_alt.xml')):
+        """Initialize the app.
+
+        Args:
+            master: The parent window.
+            model: A Keras model used for analysis.
+            face_model: A opencv model used to identify faces
+        """
         self.master = master
-        self.model = keras.models.load_model('./sequential_model_c.h5')
+        self.model = model
+        self.face_detection = face_model
         self.current_frame = None
         self.master.bind('<Escape>', lambda e: self.master.quit())
         self.camera = Camera(400, 400)
@@ -52,6 +75,7 @@ class App:
         self.show_video()
 
     def show_video(self):
+        """Display the video stream from the camera."""
         if self.current_frame is not None:  # if we have a captured frame, display it
             captured_image = Image.fromarray(self.current_frame)
             photo_image = ImageTk.PhotoImage(image=captured_image)
@@ -66,6 +90,7 @@ class App:
             self.label_widget.after(10, self.show_video)
 
     def good_feedback(self):
+        """Handle the 'Correct' button click event."""
         if self.current_frame is not None:
             self.feedback = 1
             self.current_frame = None  # Disable stillframe
@@ -73,6 +98,7 @@ class App:
             self.update_model_with_feedback()
 
     def bad_feedback(self):
+        """Handle the 'False' button click event."""
         if self.current_frame is not None:
             self.current_frame = None  # Disable stillframe
             self.show_video()
@@ -83,6 +109,7 @@ class App:
             
 
     def update_model_with_feedback(self):
+        """Update the model with the provided feedback."""
         if self.feedback is not None:
             img_batch = np.expand_dims(self.face, axis=0)
             
@@ -100,6 +127,7 @@ class App:
 
     # Capture button
     def run_analysis(self):
+        """Perform face analysis on the captured frame."""
         self.current_frame = self.camera.capture_frame()  # capture a frame
         self.detect_face()
         self.show_video()
@@ -108,18 +136,17 @@ class App:
 
 
     def release(self):
+        """Release the camera."""
         self.camera.release()
 
     
     def detect_face(self):
+        """Detect faces in the current frame and extract the region of interest."""
         # Convert the image to grayscale
         gray = cv2.cvtColor(self.current_frame, cv2.COLOR_BGR2GRAY)
 
-        # Load the Haar cascade for face detection
-        face_cascade = cv2.CascadeClassifier('image_preprocessing/haarcascade_frontalface_alt.xml')
-
-        # Detect faces in the image
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=4)
+        # Detect faces in the image and return them
+        faces = self.face_detection.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=4)
 
         if len(faces) > 0:
             # Get the first detected face So that if multiple persons in frame we just look at one
@@ -140,11 +167,13 @@ class App:
             self.current_frame = None
 
     def to_string(self):
+        """Convert the result to a string representation."""
         emotion_labels = ['Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
         s = max(zip(self.result[0],emotion_labels))[1]
         return s
 
     def analyse_face(self):
+        """Perform emotion analysis on the face and display the result."""
         img_batch = np.expand_dims(self.face, axis=0)
         self.result = self.model.predict(np.asarray(img_batch)) # what is the output?
         print("result = ", self.result)
@@ -154,7 +183,8 @@ class App:
 
 if __name__ == '__main__':
     root = Tk()
-    app = App(root)
+    model = keras.models.load_model('./sequential_model_c.h5')
+    app = App(root, model)
     root.mainloop()
     app.release()
 
