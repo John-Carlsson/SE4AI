@@ -52,7 +52,7 @@ class App:
         self.show_video()
 
     def show_video(self):
-        if self.current_frame:  # if we have a captured frame, display it
+        if self.current_frame is not None:  # if we have a captured frame, display it
             captured_image = Image.fromarray(self.current_frame)
             photo_image = ImageTk.PhotoImage(image=captured_image)
             self.label_widget.photo_image = photo_image
@@ -103,7 +103,7 @@ class App:
         self.current_frame = self.camera.capture_frame()  # capture a frame
         self.detect_face()
         self.show_video()
-        if self.current_frame:
+        if self.current_frame is not None:
             self.analyse_face()
 
 
