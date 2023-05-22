@@ -14,6 +14,7 @@ crema_path = os.listdir(Crema)
 stretched_audios_paths = "stretched_audios"
 pitched_audios_paths = "pitched_audios"
 padded_audios_paths = "padded_audios"
+white_noised_audio_paths = "white_noised_audio"
 
 def display_dataset():
     file_emotion = []
@@ -56,6 +57,24 @@ def display_dataset():
 def load_audio(file_path):
     y, sr = librosa.load(file_path)
     return y, sr
+
+def adding_white_noise():
+
+    noise_factor = 0.1
+
+    for file_name in crema_path:
+        file_path = os.path.join(Crema, file_name)
+        y, sr = load_audio(file_path)
+        noise = np.random.normal(0, y.std(), y.size)
+        white_noised_audio = y + noise * noise_factor
+        new_file_name = os.path.basename(file_path)
+        out_file_name = os.path.splitext(new_file_name)[0] + '_white_noise.wav'
+        out_path = os.path.join(white_noised_audio_paths, out_file_name)
+        if os.path.exists(out_path):
+            os.remove(out_path)
+        sf.write(out_path, white_noised_audio, sr)
+
+
 
 
 def stretching_time():
@@ -141,6 +160,7 @@ def create_mel_spectrogram():
 
 
 
-#if __name__ == "__main__":
+if __name__ == "__main__":
+    adding_white_noise()
 
 
