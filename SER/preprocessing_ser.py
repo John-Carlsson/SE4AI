@@ -3,6 +3,7 @@ import os
 import librosa
 import pandas as pd
 import numpy as np
+import random
 
 # Default paths
 default_path_raw_data = "AudioWAV"
@@ -23,11 +24,11 @@ emotion_hot_encode = {
 
 
 ################################
-# Methods for training a model #
+# Methods to apply before training a model #
 ################################
 
 
-def load_data(path=default_path_raw_data, sample_rate=None, vector_mapping=emotion_hot_encode):
+def load_data(path=default_path_raw_data, sample_rate=None, vector_mapping=emotion_hot_encode) -> tuple[pd.DataFrame, int]:
     """
     Loads the data from a directory. Extracts data samples, their name, their emotion class, the emotion vector, the highest number of frames possessed by at least one sample of the dataset.
 
@@ -66,6 +67,18 @@ def load_data(path=default_path_raw_data, sample_rate=None, vector_mapping=emoti
     max_n_frames = max(n_frames)
     return loaded_data, max_n_frames
 
+"""
+# Only use this carefully as it can distort important emotional information
+def stretch_time_pitch_shift(data: np.ndarray, effect='both', stretch_factor=random.randint(0.1, 3), n_steps_to_shift=random.randint(-6, 6)) -> np.ndarray:
+    if effect == 'stretch_time' or 'both':
+        modified_audio = librosa.effects.time_stretch(y=data, rate=stretch_factor)
+
+    if effect == 'pitch_shift' or 'both':
+        modified_audio = librosa.effects.pitch_shift(y=data, sr=16000, n_steps=n_steps_to_shift)
+
+    return modified_audio
+"""
+     
 
 
 def pad_with_zeros(data: pd.DataFrame, target_length=None):

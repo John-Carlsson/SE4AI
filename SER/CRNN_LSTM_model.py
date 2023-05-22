@@ -2,6 +2,7 @@
 import tensorflow as tf
 import keras
 from keras import layers
+from keras import callbacks
 import os
 from sklearn.model_selection import train_test_split
 import numpy as np
@@ -98,8 +99,9 @@ class CRNN_LSTM:
         X_test_tensors = np.reshape(X_test_tensors, (*X_test_tensors.shape, 1))
         y_test_tensors = tf.convert_to_tensor([tf.convert_to_tensor(label) for label in y_test])
 
+        es = callbacks.EarlyStopping(monitor='val_loss', patience=10, mode='min', restore_best_weights=True)
 
-        self.model.fit(X_train_tensors, y_train_tensors, epochs=epochs) # number epochs need to be examined
+        self.model.fit(X_train_tensors, y_train_tensors, epochs=epochs, callbacks=es) # number epochs need to be examined
 
         loss, accuracy = self.model.evaluate(X_test_tensors, y_test_tensors)
         return loss, accuracy
