@@ -189,6 +189,12 @@ def load_pad_spec_store(path=default_path_raw_data):
     store_preprocessed_data(spec_df)
 
 
+def pad_spec(data):
+    padded_data = pad_with_zeros(data, 80.000)
+    spec_df, spec_shape = calculate_spectrograms(padded_data)
+    return spec_df
+
+
 
 
 
