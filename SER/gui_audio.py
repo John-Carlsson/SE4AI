@@ -8,15 +8,35 @@ import pyaudio
 class VoiceRecorder:
 
     def __init__(self):
-        self.root = tk.Tk()
-        self.root.resizable(False, False)
+        self.window = tk.Tk()
+
+        #generate base window
+
+        self.output_console = tk.Text(self.window)
+        self.output_console.pack()
+        self.window.resizable(False, False)
+
+        #add the record button
         self.button = tk.Button(text="Record", font=("Robot", 80, "bold"),
                                 command=self.click_handler)
         self.button.pack()
-        self.label = tk.Label(text="00:00")
-        self.label.pack()
+        self.label_time = tk.Label(text="00:00")
+        self.label_time.config(font=("Robot", 18, "bold"))
+        self.label_time.pack()
+
+        self.label_phonological = tk.Label(text="Phonological Prediciton")
+        self.label_phonological.config(font=("Robot", 18, "bold"))
+        self.label_phonological.pack()
+
+        self.label_linguistic = tk.Label(text="Linguistic Prediciton")
+        self.label_linguistic.config(font=("Robot", 18, "bold"))
+        self.label_linguistic.pack()
+
+
+
+
         self.recording = False
-        self.root.mainloop()
+        self.window.mainloop()
 
     def click_handler(self):
         if self.recording:
