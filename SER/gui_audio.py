@@ -47,9 +47,21 @@ class VoiceRecorder:
                                 command=self.record_signal)
         self.button.pack()
 
-
-        self.time_label = tk.Label(text="00:00")
+        self.time_label = tk.Label(text="00:00", pady=5)
         self.time_label.pack()
+
+        self.feedback_label = tk.Label(self.window, text="Was the predicition RIGHT or WRONG", font=("Robot", 18))
+        self.feedback_label.pack()
+
+        self.button_right = tk.Button(text="RIGHT", font=("Robot", 20, "bold"), fg="green", pady=5)
+        self.button_right.pack()
+
+        self.button_left = tk.Button(text="WRONG", font=("Robot", 20, "bold"), fg="red", pady=5)
+        self.button_left.pack()
+
+
+
+
 
         self.recording = False
         self.window.mainloop()
@@ -112,22 +124,6 @@ class VoiceRecorder:
         self.phonological_var.set(prediction_1)
         self.linguistic_var.set(prediction_2)
 
-
-        #exists = True
-        #i = 1
-
-        #while exists:
-        #   if os.path.exists(f"recording{i}.wav"):
-        #        i += 1;
-        #    else:
-        #        exists = False
-
-        #sound_file = wave.open(f"recording{i}.wav", "wb")
-        #sound_file.setnchannels(1)
-        #sound_file.setsampwidth(audio.get_sample_size(pyaudio.paInt16))
-        #sound_file.setframerate(44100)
-        #sound_file.writeframes(b"".join(frames))
-        #sound_file.close()
 
 
 
