@@ -1,11 +1,12 @@
 import os
-
 import cv2
 import numpy as np
 from mouseinfo import dc
 
 """
 Face detection of face using haarcascade.xml
+:param image: image from what we want get a image
+:return: cropped face, boolean if the face was captured and coordinates of face (x-start, y-start, x-end, y-end)
 """
 def detect_face(image):
     # Convert the image to grayscale
@@ -38,7 +39,8 @@ def detect_face(image):
         return None, False, 0, 0, 0, 0
 """
 Fece detection of face using neuron model from opencv library
-@:param image = image from what we want get a image
+:param: image image from what we want get a image
+:return: cropped face, boolean if the face was captured and coordinates of face (x-start, y-start, x-end, y-end)
 """
 def detect_face2(image):
      # Define paths
