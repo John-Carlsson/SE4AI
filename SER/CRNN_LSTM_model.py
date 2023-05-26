@@ -122,6 +122,10 @@ class CRNN_LSTM:
 
 
     def store_model(self):
-        self.model.save(self.path)
+        self.model.save(os.path.join(self.path, self.model_name, ".h5"), save_format='h5')
         print("Model %s has been stored in %s. "%(self.model_name, self.path))
 
+
+if __name__ == "__main__":
+    model = CRNN_LSTM(model_name="trial_data_model")
+    model.store_model()

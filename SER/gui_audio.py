@@ -4,9 +4,9 @@ import time
 import threading
 import tkinter as tk
 import pyaudio
-import np
+import numpy as np
 
-#from main_ser import add_data_to_queue
+from main_ser import add_data_to_queue
 
 
 audio_array = []
@@ -114,7 +114,7 @@ class VoiceRecorder:
 
         audio_array_converted = np.concatenate(audio_array)
 
-        #add_data_to_queue(audio_array_converted)
+        add_data_to_queue(audio_array_converted)
 
 
 

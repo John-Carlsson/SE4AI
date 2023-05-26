@@ -3,16 +3,31 @@ from pyarrow import lib
 import pyarrow.lib as _lib
 from datasets import load_dataset
 from transformers import pipeline
+import os
+import pickle
+
+default_path = "Models"
+default_name = "Linguistic"
 
 
 class Semantic_Approach:
 
-    def __init__(self):
-        self.asr_processor = WhisperProcessor.from_pretrained("openai/whisper-large")
-        self.asr_model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-large")
-        self.asr_model.config.forced_decoder_ids = None
-        self.em_model = pipeline("text-classification", model='bhadresh-savani/distilbert-base-uncased-emotion', return_all_scores=True)
+    def __init__(self, path=default_path, name=default_name):
+        self.path = path
+        self.name = name
 
+        if os.path.isfile(os.path.join(self.path, self.name) + '.pkl'):
+            pkl_file = open(os.path.join(self.path, self.name) + '.pkl', 'rb')          
+            self.asr_processor, self.asr_model, self.em_model = pickle.load(pkl_file)
+            pkl_file.close()
+            print("Loaded models from existing file")
+        else:
+            self.asr_processor = WhisperProcessor.from_pretrained("openai/whisper-large")
+            self.asr_model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-large")
+            self.asr_model.config.forced_decoder_ids = None
+            self.em_model = pipeline("text-classification", model='bhadresh-savani/distilbert-base-uncased-emotion', return_all_scores=True)
+            print("Downloaded pre-trained models")
+        
 
 
     def speech_to_text(self, audio):
@@ -44,6 +59,14 @@ class Semantic_Approach:
 
 
 
+    def store_models(self):
+        output = open(os.path.join(self.path, self.name) + '.pkl', 'wb')
+
+        # Pickle dictionary using protocol 0.
+        pickle.dump([self.asr_processor, self.asr_model, self.em_model], output)
+
+        output.close()
+
 
 
 
@@ -55,3 +78,4 @@ if __name__ == "__main__":
     print(transcription)
     prediction = sem_appr.text_to_emotion(transcription)
     print(prediction)
+    sem_appr.store_models()
