@@ -10,7 +10,7 @@ import pyautogui
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import pandas as pd
-
+import face_detection as fd
 
 # from PyQt5 import QtCore, QtWidgets
 
@@ -111,7 +111,7 @@ class App:
 
     def run_analysis(self):
         self.current_frame = self.camera.capture_frame()  # capture a frame
-        self.detect_face2()
+        self.get_detected_face()
         self.show_video()
         if self.analyse:
             self.analyse_face()
@@ -119,72 +119,10 @@ class App:
     def release(self):
         self.camera.release()
 
-
-    def detect_face2(self):
-        # Define paths
-        prototxt_path = os.path.join('image_preprocessing/deploy.prototxt')
-        caffemodel_path = os.path.join('image_preprocessing/weights.caffemodel')
-
-        # Read the model
-        model = cv2.dnn.readNetFromCaffe(prototxt_path, caffemodel_path)
-
-        image = self.current_frame
-
-        cv2.imwrite("imageH.jpg", image)
-
-        image = cv2.imread('imageH.jpg')
-
-        (h, w) = image.shape[:2]
-        blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
-
-        model.setInput(blob)
-        detections = model.forward()
-
-        # Identify each face
-        for i in range(0, detections.shape[2]):
-            box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-            (startX, startY, endX, endY) = box.astype("int")
-
-            confidence = detections[0, 0, i, 2]
-
-            # If confidence > 0.5, save it as a separate file
-            if (confidence > 0.5):
-                frame = image[startY:endY, startX:endX]
-                self.current_frame = cv2.rectangle(self.current_frame, (startX, startY), (endX, endY), (0, 255, 255), 2)
-                dim = (48, 48)
-                self.face = cv2.resize(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), dim, interpolation=cv2.INTER_AREA)
-                cv2.imwrite(str(i) + '_' + "image.jpg", self.face)
-
-    def detect_face(self):
-        # Convert the image to grayscale
-        gray = cv2.cvtColor(self.current_frame, cv2.COLOR_BGR2GRAY)
-
-        # Load the Haar cascade for face detection
-        face_cascade = cv2.CascadeClassifier('image_preprocessing/haarcascade_frontalface_alt.xml')
-
-        # Detect faces in the image
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=4)
-
-        if len(faces) > 0:
-            # Get the first detected face So that if multiple persons in frame we just look at one
-            (x, y, w, h) = faces[0]
-
-            # Extract the region of interest containing the face
-            face_roi = self.current_frame[y:y + h, x:x + w]
-
-            # Display picture with a frame around the face
-            self.current_frame = cv2.rectangle(self.current_frame, (x, y), (x + w, y + h), (0, 255, 255), 2)
-
-            n = dc.collector()
-            # TODO: emotion input, default is set to 1
-            e = 1
-
-            # Convert the region to (48 x 48) grayscale and save the face
-            dim = (48, 48)
-            self.face = cv2.resize(cv2.cvtColor(face_roi, cv2.COLOR_BGR2GRAY), dim, interpolation=cv2.INTER_AREA) / 255
-            n.save_img(self.face, e)
-            cv2.imwrite('./face_test.png', self.face)
-            # print(self.width, self.height)
+    def get_detected_face(self):
+        self.face, captured, startX, startY, endX, endY = fd.detect_face2(self.current_frame)
+        self.current_frame = cv2.rectangle(self.current_frame, (startX, startY), (endX, endY), (0, 255, 255), 2)
+        if captured:
             self.analyse = True
         else:
             self.text.insert(END, "No face detected\n")
@@ -241,7 +179,7 @@ class App:
         self.update_plot()
         print("result = ", result)
         print(self.to_string(result))
-        # result = self.model(self.face)
+        result = self.model(self.face)
         self.text.insert(END, self.text.insert(END, self.to_string(result) + '\n'))
 
 
