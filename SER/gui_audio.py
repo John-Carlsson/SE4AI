@@ -6,16 +6,12 @@ import tkinter as tk
 import pyaudio
 import numpy as np
 
-from main_ser import add_data_to_queue
-
 
 audio_array = []
 
 
 
 class VoiceRecorder:
-
-
 
 
     def launch(self):
@@ -50,18 +46,36 @@ class VoiceRecorder:
         self.time_label = tk.Label(text="00:00", pady=5)
         self.time_label.pack()
 
-        self.feedback_label = tk.Label(self.window, text="Was the predicition RIGHT or WRONG", font=("Robot", 18))
+        self.feedback_label = tk.Label(self.window, text="Please select the used emotion", font=("Robot", 18))
         self.feedback_label.pack()
 
-        self.button_right = tk.Button(text="RIGHT", font=("Robot", 20, "bold"), fg="green", pady=5)
-        self.button_right.pack()
+        self.button_frame = tk.Frame(self.window)
+        self.button_frame.pack()
 
-        self.button_left = tk.Button(text="WRONG", font=("Robot", 20, "bold"), fg="red", pady=5)
-        self.button_left.pack()
+        self.button_angry = tk.Button(self.button_frame, text="ANGRY", font=("Robot", 20, "bold"), fg="black", pady=5)
+        self.button_angry.grid(row=0, column=0, padx=5, pady=5)
 
+        self.button_disgusting = tk.Button(self.button_frame, text="DISGUSTING", font=("Robot", 20, "bold"), fg="black",
+                                           pady=5)
+        self.button_disgusting.grid(row=0, column=1, padx=5, pady=5)
 
+        self.button_fear = tk.Button(self.button_frame, text="FEAR", font=("Robot", 20, "bold"), fg="black", pady=5)
+        self.button_fear.grid(row=0, column=2, padx=5, pady=5)
 
+        self.button_happy = tk.Button(self.button_frame, text="HAPPY", font=("Robot", 20, "bold"), fg="black", pady=5)
+        self.button_happy.grid(row=1, column=0, padx=5, pady=5)
 
+        self.button_neutral = tk.Button(self.button_frame, text="NEUTRAL", font=("Robot", 20, "bold"), fg="black",
+                                        pady=5)
+        self.button_neutral.grid(row=1, column=1, padx=5, pady=5)
+
+        self.button_sad = tk.Button(self.button_frame, text="SAD", font=("Robot", 20, "bold"), fg="black", pady=5)
+        self.button_sad.grid(row=1, column=2, padx=5, pady=5)
+
+        #6 button mit den einzelnen emotionen
+
+        #falls thread nicht klappt, einfach die recorded audio in die method, falls data not null
+        #
 
         self.recording = False
         self.window.mainloop()
@@ -82,8 +96,8 @@ class VoiceRecorder:
 
     def record(self):
         audio = pyaudio.PyAudio()
-        stream = audio.open(format=pyaudio.paInt16, channels=1, rate=44100,
-                            input=True, frames_per_buffer=1024)
+        stream = audio.open(format=pyaudio.paInt16, channels=1, rate=16000,
+                            input=True, frames_per_buffer=512)
 
 
         start = time.time()
@@ -114,6 +128,7 @@ class VoiceRecorder:
 
         audio_array_converted = np.concatenate(audio_array)
 
+        from main_ser import add_data_to_queue
         add_data_to_queue(audio_array_converted)
 
 

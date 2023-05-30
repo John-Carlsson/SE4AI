@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import sys
 sys.path.append(os.path.join(os.path.realpath(__file__), "preprocessing_pipeline.py"))
-from preprocessing_ser import calculate_spectrograms, pad_with_zeros
+from preprocessing_pipeline import calculate_spectrograms, pad_with_zeros
 sys.path.append(os.path.join(os.path.realpath(__file__), "CRNN_LSTM_model.py"))
 from CRNN_LSTM_model import CRNN_LSTM
 sys.path.append(os.path.join(os.path.realpath(__file__), "Semantic_approach.py"))
@@ -12,6 +12,10 @@ sys.path.append(os.path.join(os.path.realpath(__file__), "gui_audio.py"))
 import gui_audio
 import threading
 import time
+import numpy as np
+
+phono_model = CRNN_LSTM(model_name="trial_data_model")  # phonological approach
+lingu_models = Semantic_Approach()  # linguistic approach (semantic = meaning of the words)
 
 
 lock = threading.Lock()
@@ -24,11 +28,10 @@ data_with_feedback = pd.DataFrame(columns=["Spectrogram", "Feedback"])   # Stora
 # Accessed by User Interface
 def add_data_to_queue(data):
     print("Appended a recording")
-    lock.acquire()
-    global data_to_process
     data_to_process.append(data)
     print(data_to_process)
-    lock.release()
+    pipeline(data_to_process)
+
 
 
 # Accessed by the User Interface
@@ -37,63 +40,53 @@ def store_feedback(feedback, id):
     
 
 
-def pipeline():
+def pipeline(data_queue):
     print("Listening to input")
 
     global data_to_process
     global data_with_feedback
-    
-    while True:
-        data_sample = None
-        
-        lock.acquire()
-        if data_to_process:
-            data_sample = data_to_process.pop(0)
-        else: 
-            print("No sample in the list. Might have been lost again")
-        lock.release()
 
-        
-        if data_sample is not None:
-            # Preprocessing for phonological info
-            if len(data_sample) < 18000: # Check if data is shorter than 5 sec, TODO: find out the exact number, length = number of frames ? 
-                data_sample = pad_with_zeros(data_sample)
-            spec = calculate_spectrograms(data_sample)
-        
-            # Store the spectrogram in a Dataframe for adding the user feedback later. The index of the row is the ID of the sample.
-            list_to_append = [spec, None]
-            data_with_feedback = pd.concat([data_with_feedback, list_to_append])
-            id = data_with_feedback.shape[0] - 1  # get the number of rows to compute the index of the last appended row which is the ID of the sample/spectrogram -> TODO: pass it to the GUI, so that it can return the feedback together with the ID of the sample -> necessary for storing the feedback together with the spectrogram
+    data_sample = data_queue.pop(0)
 
-            # Prediction based on phonological info
-            probs, prediction_1 = phono_model.predict(spec, single_sample=True)  # TODO: maybe also show the predicted probability in the GUI?
+    data_sample_new = np.nan_to_num(data_sample, copy=True, nan=0.0, posinf=None, neginf=None)
 
 
-            # Prediction based on linguistic info
-            prediction_2 = lingu_models.speech_to_emotion(data_sample)
+    if len(data_sample_new) < 80000:# Check if data is shorter than 5 sec, TODO: find out the exact number, length = number of frames ?
+        data_sample_new = pad_with_zeros(data_sample_new, 80000)
+    print(data_sample_new)
+    spec = calculate_spectrograms(data_sample_new)
+
+    print("und weiter gehts")
+
+    # Store the spectrogram in a Dataframe for adding the user feedback later. The index of the row is the ID of the sample.
+    list_to_append = pd.DataFrame([spec, None])
+    data_with_feedback = pd.concat([data_with_feedback, list_to_append])
+    id = data_with_feedback.shape[0] - 1  # get the number of rows to compute the index of the last appended row which is the ID of the sample/spectrogram -> TODO: pass it to the GUI, so that it can return the feedback together with the ID of the sample -> necessary for storing the feedback together with the spectrogram
+    print("irgendwo hier haperts")
+    # Prediction based on phonological info
+    probs, prediction_1 = phono_model.predict(spec,single_sample=True)  # TODO: maybe also show the predicted probability in the GUI?
+
+    # Prediction based on linguistic info
+    prediction_2 = lingu_models.speech_to_emotion(data_sample)
+
+    ui.publish_emotion_label(prediction_1, prediction_2)
 
 
 
-            # User interface
-            ui.publish_emotion_label(prediction_1, prediction_2)
 
-
-    
-        time.sleep(1) # sleep for one second 
 
 
 
 
 
 if __name__ == "__main__":
-    phono_model = CRNN_LSTM(model_name="trial_data_model")   # phonological approach
-    lingu_models = Semantic_Approach()  # linguistic approach (semantic = meaning of the words)
+
+
     print("Models have been initialized")
 
     # Start a thread for the pipeline
-    pipeline = threading.Thread(target=pipeline, daemon=True)  # daemon -> so that it ends automatically when the GUI is closed
-    pipeline.start()
-    
+    #pipeline = threading.Thread(target=pipeline, daemon=True, args=(data_to_process,))  # daemon -> so that it ends automatically when the GUI is closed
+    #pipeline.start()
 
     ui = gui_audio.VoiceRecorder()
     print("VoiceRecoder has been initialized")
