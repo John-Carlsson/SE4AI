@@ -1,6 +1,7 @@
 import os
 import cv2
 import numpy as np
+import data_collector as dc
 #from mouseinfo import dc
 
 """

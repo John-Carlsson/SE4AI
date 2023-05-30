@@ -1,4 +1,3 @@
-import os
 from tkinter import *
 import cv2
 import keras
@@ -6,17 +5,20 @@ import numpy as np
 from PIL import Image, ImageTk
 import platform
 import data_collector as dc
-import pyautogui
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import pandas as pd
-import face_detection as fd
-
-# from PyQt5 import QtCore, QtWidgets
+from functools import partial
+from keras.optimizers import Adam
 
 
 class Camera:
-    def __init__(self, width, height):
+
+    def __init__(self, width:int, height:int):
+        """ Init of the camera class that can capture a frame
+
+        Args:
+            width (int): [set the width of the camera]
+            height (int): [set the width of the camera]
+        """
+
         if platform.processor() == 'arm':
             self.vid = cv2.VideoCapture(1)
         else:
@@ -27,59 +29,54 @@ class Camera:
         self.vid.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
     def capture_frame(self):
+        """Capture a frame from the camera.
+
+        Returns:
+            numpy.ndarray: Captured frame as an RGB image array.
+        """
         _, frame = self.vid.read()
         return cv2.flip(cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA), 1)
 
     def release(self):
         self.vid.release()
 
-
 class App:
+    """The GUI app with three windows: camera, output, and buttons."""
 
-    def __init__(self, master):
+    def __init__(self, master, model, face_model = cv2.CascadeClassifier('image_preprocessing/haarcascade_frontalface_alt.xml')):
+        """Initialize the app.
+
+        Args:
+            master: The parent window.
+            model: A Keras model used for analysis.
+            face_model: A opencv model used to identify faces
+        """
         self.master = master
-        self.model = keras.models.load_model('./sequential_model_c.h5')
+        self.model = model
+        self.face_detection = face_model
         self.current_frame = None
         self.master.bind('<Escape>', lambda e: self.master.quit())
-        self.width, self.height = pyautogui.size()
-        self.camera = Camera(self.width / 5, self.height / 5)
-        self.analyse = False
-
-        self.angry = 0.0
-        self.disgust = 0.0
-        self.fear = 0.0
-        self.happy = 50.0
-        self.sad = 0.0
-        self.surprised = 0.0
-        self.neutral = 0.0
+        self.camera = Camera(400, 400)
 
         self.label_widget = Label(self.master)
         self.label_widget.pack(side='left')
 
-        self.data = {'emotions': ['Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral'],
-                     'predictions': [self.angry, self.disgust, self.fear, self.happy, self.sad, self.surprised,
-                                     self.neutral]}
-        self.figure1 = plt.Figure(figsize=(6, 5), dpi=100)
-        self.df = pd.DataFrame(self.data)
-
-        self.ax1 = self.figure1.add_subplot(111)
-        self.bar1 = FigureCanvasTkAgg(self.figure1, root)
-        self.bar1.get_tk_widget().pack(side='left', fill='both')
-        self.plot_ref = False
-        self.ax1.set_xticks([0, 1, 2, 3, 4, 5, 6])
-        self.ax1.set_xticklabels(['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral'],
-                                 rotation='vertical', fontsize=8)
-        self.ax1.set_title('Predictions')
-        self.ax1.set_ylim([0, 100])
-
-        self.good_button = Button(self.master, text='Correct', font=('arial', 25), fg='green',
-                                  command=self.good_feedback)
+        self.good_button = Button(self.master, text='Correct', font=('arial', 25), fg='green', command=self.good_feedback)
         self.bad_button = Button(self.master, text='False', font=('arial', 25), fg='red', command=self.bad_feedback)
-        self.capture_button = Button(self.master, text='Capture', font=('arial', 25), fg='black',
-                                     command=self.run_analysis)
+        self.capture_button = Button(self.master, text='Capture', font=('arial', 25), fg='black', command=self.run_analysis)
         self.capture_button.pack(side='bottom')
         self.bad_button.pack(side='bottom')
         self.good_button.pack(side='bottom')
+
+        # emotion label: 'Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral'
+        self.happy_button = Button(self.master, text='Happy', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 0, 0, 1, 0, 0, 0]])))
+        self.sad_button = Button(self.master, text='Sad', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 0, 0, 0, 1, 0, 0]])))
+        self.neutral_button = Button(self.master, text='Neutral', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 0, 0, 0, 0, 0, 1]])))
+        self.fear_button = Button(self.master, text='Fear', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 0, 1, 0, 0, 0, 0]])))
+        self.angry_button = Button(self.master, text='Angry', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[1, 0, 0, 0, 0, 0, 0]])))
+        self.suprise_button = Button(self.master, text='Surprise', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 0, 0, 0, 0, 1, 0]])))
+        self.disgust_button = Button(self.master, text='Disgust', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 1, 0, 0, 0, 0, 0]])))
+
 
         self.text = Text(self.master, height=20, width=100, bg='skyblue')
         self.text.pack(side='top')
@@ -88,6 +85,7 @@ class App:
         self.show_video()
 
     def show_video(self):
+        """Display the video stream from the camera."""
         if self.current_frame is not None:  # if we have a captured frame, display it
             captured_image = Image.fromarray(self.current_frame)
             photo_image = ImageTk.PhotoImage(image=captured_image)
@@ -102,91 +100,133 @@ class App:
             self.label_widget.after(10, self.show_video)
 
     def good_feedback(self):
-        self.current_frame = None  # Disable stillframe
-        self.show_video()
+        """Handle the 'Correct' button click event."""
+        if self.current_frame is not None:
+            self.feedback = 1
+            self.current_frame = None  # Disable stillframe
+            self.show_video()
+            self.update_model_with_feedback(np.array([[0, 0, 0, 0, 0, 0, 0]]))
 
     def bad_feedback(self):
-        self.current_frame = None  # Disable stillframe
-        self.show_video()
+        """Handle the 'False' button click event."""
+        if self.current_frame is not None:
+            
+            self.happy_button.pack(side='left')
+            self.sad_button.pack(side='left')
+            self.neutral_button.pack(side='left')
+            self.fear_button.pack(side='left')
+            self.angry_button.pack(side='left')
+            self.suprise_button.pack(side='left')
+            self.disgust_button.pack(side='left')
 
+
+    def bad_real_emotion(self, true_emotion):
+        """Handle the 'False' button click event."""
+        if self.current_frame is not None:
+            
+            #how does feedback function work?
+            self.result = true_emotion
+
+            self.happy_button.pack_forget()
+            self.sad_button.pack_forget()
+            self.neutral_button.pack_forget()
+            self.fear_button.pack_forget()
+            self.angry_button.pack_forget()
+            self.suprise_button.pack_forget()
+            self.disgust_button.pack_forget()
+
+
+            self.current_frame = None  # Disable stillframe
+            self.show_video()
+            self.update_model_with_feedback(true_emotion)
+            # Since we dont know what is wrong we can't update with any precise labels
+            # this becomes very impractible with more than 2 labels
+            # so this is just for possible use in for example a binary classifier
+            
+    def update_model_with_feedback(self, true_emotion):
+        print("update model")
+        """Update the model with the provided feedback."""
+        #if self.feedback is not None:
+        img_batch = np.expand_dims(self.face, axis=0)
+        
+        # true_emotion == 0 array represents correct prediction -> correct prediction gets saved
+        if np.array_equal(true_emotion, np.array([[0, 0, 0, 0, 0, 0, 0]])):
+            idx = np.where(max(self.result[0]) == self.result[0])
+            self.result[0] = [0 for i in range(len(self.result[0]))]
+            self.result[0][idx] = 1
+
+            feedback_data = self.result
+            print("feedback data: " + str(feedback_data))
+        # if prediction is wrong and true emotion was given
+        else:
+            feedback_data = true_emotion
+            print("feedback data false: " + str(feedback_data))
+
+        optimizer = Adam(learning_rate=0.001)
+        self.model.compile(loss='binary_crossentropy', optimizer=optimizer)
+        self.model.fit(img_batch, feedback_data, epochs=1)
+
+        self.feedback = None
+
+    # Capture button
     def run_analysis(self):
+        """Perform face analysis on the captured frame."""
         self.current_frame = self.camera.capture_frame()  # capture a frame
-        self.get_detected_face()
+        self.detect_face()
         self.show_video()
-        if self.analyse:
+        if self.current_frame is not None:
             self.analyse_face()
 
+
     def release(self):
+        """Release the camera."""
         self.camera.release()
 
-    def get_detected_face(self):
-        self.face, captured, startX, startY, endX, endY = fd.detect_face2(self.current_frame)
-        self.current_frame = cv2.rectangle(self.current_frame, (startX, startY), (endX, endY), (0, 255, 255), 2)
-        if captured:
-            self.analyse = True
+    
+    def detect_face(self):
+        """Detect faces in the current frame and extract the region of interest."""
+        # Convert the image to grayscale
+        gray = cv2.cvtColor(self.current_frame, cv2.COLOR_BGR2GRAY)
+
+        # Detect faces in the image and return them
+        faces = self.face_detection.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=4)
+
+        if len(faces) > 0:
+            # Get the first detected face So that if multiple persons in frame we just look at one
+            (x, y, w, h) = faces[0]
+
+            # Extract the region of interest containing the face
+            face_roi = self.current_frame[y:y+h, x:x+w]
+
+            # Display picture with a frame around the face
+            self.current_frame = cv2.rectangle(self.current_frame, (x, y), (x + w, y + h), (0, 255, 255), 2)
+
+            dim = (48, 48)
+            self.face = cv2.resize(cv2.cvtColor(face_roi, cv2.COLOR_BGR2GRAY), dim, interpolation = cv2.INTER_AREA)/255
+            
+            
         else:
             self.text.insert(END, "No face detected\n")
-            self.analyse = False
+            self.current_frame = None
 
-    def to_string(self, result):
+    def to_string(self):
+        """Convert the result to a string representation."""
         emotion_labels = ['Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
-        s = ''
-        plist = result[0]
-        for i in range(7):
-            p = round(plist[i] * 100, 3)
-            s += emotion_labels[i] + ': '
-            s += str(p) + '%'
-            s += '\n'
+        s = max(zip(self.result[0],emotion_labels))[1]
         return s
 
-    def update_predictions(self, results):
-        self.angry = results[0]
-        self.disgust = results[1]
-        self.fear = results[2]
-        self.happy = results[3]
-        self.sad = results[4]
-        self.surprised = results[5]
-        self.neutral = results[6]
-
-    def update_plot(self):
-        self.data = {'emotions': ['Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral'],
-                     'predictions': [self.angry, self.disgust, self.fear, self.happy, self.sad, self.surprised,
-                                     self.neutral]}
-        self.df = pd.DataFrame(self.data)
-
-        # TODO: This may not be optimal, but it works at updating the frame after each capture.
-        if not self.plot_ref:
-            self.plot_ref = True
-            self.df.plot(kind='bar', legend=False, ax=self.ax1)
-
-        else:
-            self.ax1.clear()
-            self.df.plot(kind='bar', legend=False, ax=self.ax1)
-
-        # Trigger the canvas to update and redraw.
-        self.ax1.set_xticks([0, 1, 2, 3, 4, 5, 6])
-        self.ax1.set_xticklabels(['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral'],
-                                 rotation='vertical', fontsize=8)
-        self.ax1.set_title('Predictions')
-        self.ax1.set_ylim([0, 100])
-        self.bar1.draw()
-
-
     def analyse_face(self):
+        """Perform emotion analysis on the face and display the result."""
         img_batch = np.expand_dims(self.face, axis=0)
-        result = self.model.predict(np.asarray(img_batch))
-        self.update_predictions(result[0] * 100)
-        self.update_plot()
-        print("result = ", result)
-        print(self.to_string(result))
-        result = self.model(self.face)
-        self.text.insert(END, self.text.insert(END, self.to_string(result) + '\n'))
+        self.result = self.model.predict(np.asarray(img_batch)) # what is the output?
+        print("result = ", self.result)
 
+        # result = self.model(self.face)
+        self.text.insert(END, self.text.insert(END, self.to_string() + '\n'))
 
 if __name__ == '__main__':
     root = Tk()
-    app = App(root)
+    model = keras.models.load_model('./sequential_model_c.h5')
+    app = App(root, model)
     root.mainloop()
     app.release()
-
-    
