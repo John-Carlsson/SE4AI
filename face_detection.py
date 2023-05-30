@@ -1,7 +1,7 @@
 import os
 import cv2
 import numpy as np
-from mouseinfo import dc
+#from mouseinfo import dc
 
 """
 Face detection of face using haarcascade.xml
