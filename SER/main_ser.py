@@ -6,8 +6,8 @@ sys.path.append(os.path.join(os.path.realpath(__file__), "preprocessing_pipeline
 from preprocessing_pipeline import calculate_spectrograms, pad_with_zeros
 sys.path.append(os.path.join(os.path.realpath(__file__), "CRNN_LSTM_model.py"))
 from CRNN_LSTM_model import CRNN_LSTM
-sys.path.append(os.path.join(os.path.realpath(__file__), "Semantic_approach.py"))
-from Semantic_approach import Semantic_Approach
+#sys.path.append(os.path.join(os.path.realpath(__file__), "Semantic_approach.py"))
+#from Semantic_approach import Semantic_Approach
 sys.path.append(os.path.join(os.path.realpath(__file__), "gui_audio.py"))
 import gui_audio
 import threading
@@ -68,7 +68,8 @@ def pipeline(data_queue):
     start_time = datetime.now()
     print(start_time)
     # Prediction based on phonological info
-    probs, prediction_1 = phono_model.predict(spec,single_sample=True)  # TODO: maybe also show the predicted probability in the GUI?
+    probabilities_ser = phono_model.predict(spec) 
+    print(probabilities_ser)
     print("nach phono model prediction, vor lingu models prediction")
     print(datetime.now())
     # Prediction based on linguistic info
@@ -77,7 +78,7 @@ def pipeline(data_queue):
     print("nach prediction, vor publishing")
     print(datetime.now())
     #print(datetime.now() - start_time)
-    ui.publish_emotion_label(prediction_1, prediction_2)
+    ui.publish_emotion_label(probabilities_ser, prediction_2)
 
 
 

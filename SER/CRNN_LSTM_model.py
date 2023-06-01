@@ -4,8 +4,11 @@ import keras
 from keras import layers
 from keras import callbacks
 import os
+import sys
 from sklearn.model_selection import train_test_split
 import numpy as np
+sys.path.append(os.path.join(os.path.realpath(__file__), "preprocessing_ser.py"))
+from preprocessing_ser import load_spectrograms
 
 # Default class mapping 
 emotion_hot_encode = {
@@ -99,7 +102,7 @@ class CRNN_LSTM:
         X_test_tensors = np.reshape(X_test_tensors, (*X_test_tensors.shape, 1))
         y_test_tensors = tf.convert_to_tensor([tf.convert_to_tensor(label) for label in y_test])
 
-        es = callbacks.EarlyStopping(monitor='val_loss', patience=10, mode='min', restore_best_weights=True)
+        es = callbacks.EarlyStopping(monitor='loss', patience=10, mode='min', restore_best_weights=True)
 
         self.model.fit(X_train_tensors, y_train_tensors, epochs=epochs, callbacks=es) # number epochs need to be examined
 
@@ -109,15 +112,8 @@ class CRNN_LSTM:
 
 
 
-    def predict(self, data, single_sample: bool):
-        if single_sample:
-            probs = self.model(tf.convert_to_tensor(data[np.newaxis, ...]))
-        else:
-            probs = self.model.predict(tf.convert_to_tensor(list(data)))
-        
-        emotion_indeces = np.argmax(probs, axis=1)
-        emotion_labels = [list(emotion_hot_encode.keys())[ind] for ind in emotion_indeces]
-        return probs, emotion_labels
+    def predict(self, data):
+        return self.model.predict(tf.convert_to_tensor(data[np.newaxis, ...]))
         
 
 
@@ -127,5 +123,9 @@ class CRNN_LSTM:
 
 
 if __name__ == "__main__":
-    model = CRNN_LSTM(model_name="trial_data_model")
-    model.store_model()
+    print(tf.config.list_physical_devices('GPU'))
+    with tf.device('/device:GPU:0'):
+        spec_df, spec_shape = load_spectrograms()
+        model = CRNN_LSTM(model_name="trial_data_model", input_shape=spec_shape)
+        model.train_model(spec_df)
+        model.store_model()

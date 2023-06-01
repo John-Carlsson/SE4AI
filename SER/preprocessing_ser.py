@@ -15,8 +15,8 @@ emotion_hot_encode = {
     'DIS': (0., 1., 0., 0., 0., 0.),
     'FEA': (0., 0., 1., 0., 0., 0.),
     'HAP': (0., 0., 0., 1., 0., 0.),
-    'NEU': (0., 0., 0., 0., 1., 0.),
-    'SAD': (0., 0., 0., 0., 0., 1.)
+    'SAD': (0., 0., 0., 0., 1., 0.),
+    'NEU': (0., 0., 0., 0., 0., 1.)
 }
 
 ## Final Dataframe Columns: "Data Sample", "Name", "Emotion Class", "Emotion Vector", "Padded Sample", "Spectrogram"
