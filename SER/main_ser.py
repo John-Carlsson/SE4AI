@@ -1,4 +1,5 @@
 # imports
+from tkinter import *
 import os
 import pandas as pd
 import sys
@@ -18,21 +19,18 @@ from datetime import datetime
 phono_model = CRNN_LSTM(model_name="trial_data_model")  # phonological approach
 #lingu_models = Semantic_Approach()  # linguistic approach (semantic = meaning of the words)
 
-ui = gui_audio.VoiceRecorder()
-
-lock = threading.Lock()
 
 data_to_process = []            # Queue for input data that will be fed into the models
 data_with_feedback = pd.DataFrame(columns=["Spectrogram", "Feedback"])   # Storage for the samples to train the models later
 
-
+ui = gui_audio.VoiceRecorder()
 
 # Accessed by User Interface
-def add_data_to_queue(data):
+def add_data_to_queue(self, data):
     print("Appended a recording")
     data_to_process.append(data)
     print(data_to_process)
-    pipeline(data_to_process)
+    pipeline(self ,data_to_process)
 
 
 
@@ -42,7 +40,7 @@ def store_feedback(feedback, id):
     
 
 
-def pipeline(data_queue):
+def pipeline(self, data_queue):
     print("Listening to input")
 
     global data_to_process
@@ -77,7 +75,8 @@ def pipeline(data_queue):
     print("nach prediction, vor publishing")
     print(datetime.now())
     #print(datetime.now() - start_time)
-    ui.publish_emotion_label(prediction_1, prediction_2)
+    from gui_audio import publish_emotion_label
+    publish_emotion_label(self, prediction_1, prediction_2)
 
 
 
@@ -98,8 +97,8 @@ if __name__ == "__main__":
 
     
     #print("VoiceRecoder has been initialized")
-    ui.launch()
 
+    ui.launch()
 
     
 

@@ -9,7 +9,9 @@ import numpy as np
 
 audio_array = []
 
+shared_variable = ""
 
+phonological_prediction = None
 
 class VoiceRecorder:
 
@@ -65,8 +67,7 @@ class VoiceRecorder:
         self.button_happy = tk.Button(self.button_frame, text="HAPPY", font=("Robot", 20, "bold"), fg="black", pady=5)
         self.button_happy.grid(row=1, column=0, padx=5, pady=5)
 
-        self.button_neutral = tk.Button(self.button_frame, text="NEUTRAL", font=("Robot", 20, "bold"), fg="black",
-                                        pady=5)
+        self.button_neutral = tk.Button(self.button_frame, text="NEUTRAL", font=("Robot", 20, "bold"), fg="black",                                       pady=5)
         self.button_neutral.grid(row=1, column=1, padx=5, pady=5)
 
         self.button_sad = tk.Button(self.button_frame, text="SAD", font=("Robot", 20, "bold"), fg="black", pady=5)
@@ -75,7 +76,6 @@ class VoiceRecorder:
         #6 button mit den einzelnen emotionen
 
         #falls thread nicht klappt, einfach die recorded audio in die method, falls data not null
-        #
 
         self.recording = False
         self.window.mainloop()
@@ -129,15 +129,22 @@ class VoiceRecorder:
         audio_array_converted = np.concatenate(audio_array)
 
         from main_ser import add_data_to_queue
-        add_data_to_queue(audio_array_converted)
+        add_data_to_queue(self, audio_array_converted)
+
+    def update_label_text(self, shared_variable):
+
+        new_text = shared_variable
+        self.phonological_var.set(new_text)
 
 
 
+def publish_emotion_label(self, prediction_1, prediction_2):
 
-    def publish_emotion_label(self, prediction_1, prediction_2):
 
-        self.phonological_var.set(prediction_1)
-        self.linguistic_var.set(prediction_2)
+        global shared_variable
+        shared_variable = prediction_1[0]
+        self.update_label_text(shared_variable)
+
 
 
 
