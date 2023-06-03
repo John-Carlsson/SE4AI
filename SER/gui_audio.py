@@ -5,16 +5,24 @@ import threading
 import tkinter as tk
 import pyaudio
 import numpy as np
+import pandas as pd
 
 
 audio_array = []
 
 shared_variable = ""
 
-phonological_prediction = None
+recorded_audio = []
+recorded_dataframes = []
+user_feedback_emotion_global = ""
+
+
 
 class VoiceRecorder:
 
+    def __init__(self):
+        self.recorded_audio = []
+        self.user_feedback_emotion = ""
 
     def launch(self):
         self.window = tk.Tk()
@@ -54,23 +62,30 @@ class VoiceRecorder:
         self.button_frame = tk.Frame(self.window)
         self.button_frame.pack()
 
-        self.button_angry = tk.Button(self.button_frame, text="ANGRY", font=("Robot", 20, "bold"), fg="black", pady=5)
+
+        self.button_angry = tk.Button(self.button_frame, text="ANGRY", font=("Robot", 20, "bold"), fg="black", pady=5,
+                                      command=lambda: self.set_user_feedback('Angry'))
+        self.button_angry.pack()
         self.button_angry.grid(row=0, column=0, padx=5, pady=5)
 
         self.button_disgusting = tk.Button(self.button_frame, text="DISGUSTING", font=("Robot", 20, "bold"), fg="black",
-                                           pady=5)
+                                           pady=5, command=lambda: self.set_user_feedback("Disgusting"))
         self.button_disgusting.grid(row=0, column=1, padx=5, pady=5)
 
-        self.button_fear = tk.Button(self.button_frame, text="FEAR", font=("Robot", 20, "bold"), fg="black", pady=5)
+        self.button_fear = tk.Button(self.button_frame, text="FEAR", font=("Robot", 20, "bold"), fg="black", pady=5,
+                                     command=lambda: self.set_user_feedback("Fear"))
         self.button_fear.grid(row=0, column=2, padx=5, pady=5)
 
-        self.button_happy = tk.Button(self.button_frame, text="HAPPY", font=("Robot", 20, "bold"), fg="black", pady=5)
+        self.button_happy = tk.Button(self.button_frame, text="HAPPY", font=("Robot", 20, "bold"), fg="black", pady=5,
+                                      command=lambda: self.set_user_feedback("Happy"))
         self.button_happy.grid(row=1, column=0, padx=5, pady=5)
 
-        self.button_neutral = tk.Button(self.button_frame, text="NEUTRAL", font=("Robot", 20, "bold"), fg="black",                                       pady=5)
+        self.button_neutral = tk.Button(self.button_frame, text="NEUTRAL", font=("Robot", 20, "bold"), fg="black",pady=5,
+                                        command=lambda: self.set_user_feedback("Neutral"))
         self.button_neutral.grid(row=1, column=1, padx=5, pady=5)
 
-        self.button_sad = tk.Button(self.button_frame, text="SAD", font=("Robot", 20, "bold"), fg="black", pady=5)
+        self.button_sad = tk.Button(self.button_frame, text="SAD", font=("Robot", 20, "bold"), fg="black", pady=5,
+                                    command=lambda: self.set_user_feedback("Sad"))
         self.button_sad.grid(row=1, column=2, padx=5, pady=5)
 
         #6 button mit den einzelnen emotionen
@@ -127,26 +142,50 @@ class VoiceRecorder:
         audio.terminate()
 
         audio_array_converted = np.concatenate(audio_array)
+        self.set_audio_for_feedback(audio_array_converted)
+
+
+
+
 
         from main_ser import add_data_to_queue
         add_data_to_queue(self, audio_array_converted)
 
-    def update_label_text(self, shared_variable):
+        create_dataframe_audio_and_feedback(self)
 
+    def update_label_text(self, shared_variable):
         new_text = shared_variable
         self.phonological_var.set(new_text)
 
+    def set_user_feedback(self, emotion):
+        self.user_feedback_emotion = emotion
+
+    def get_user_feedback(self):
+        return self.user_feedback_emotion
+
+    def set_audio_for_feedback(self, recorded_audio):
+        self.recorded_audio = recorded_audio
+
+    def get_audio_for_feedback(self):
+        return self.recorded_audio
+
+def create_dataframe_audio_and_feedback(self):
+
+        emotion = self.get_user_feedback()
+        audio = self.get_audio_for_feedback()
+
+        data = {'Emotion': [emotion], 'Audio Array': [audio]}
+        df = pd.DataFrame(data)
+        recorded_dataframes.append(df)
+
+        print(recorded_dataframes)
 
 
 def publish_emotion_label(self, prediction_1, prediction_2):
 
-
         global shared_variable
         shared_variable = prediction_1[0]
         self.update_label_text(shared_variable)
-
-
-
 
 
 if __name__ == "__main__":
