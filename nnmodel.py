@@ -32,8 +32,7 @@ import fetch_dataset
 ########################
 
 
-#default_path = '/Users/psleborne/Documents/Vorlesungen/Skript/SoftwareEngAI/Emotional_Recognition/Datasets/data2/fer2013.csv'
-#path2 = '/Users/psleborne/Documents/Vorlesungen/Skript/SoftwareEngAI/Emotional_Recognition/Datasets/data2'
+
 
 fetch_dataset.download()
 default_path = 'fer2013.csv'
@@ -46,6 +45,12 @@ emotion_counts = default_data['emotion'].value_counts(sort=False).reset_index()
 emotion_counts.columns = ['emotion', 'number']
 emotion_counts['emotion'] = emotion_counts['emotion'].map(emotion_map_default)
 emotion_labels_default = ['Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+
+
+emotion_map_modified = {0: 'Angry', 1: 'Digust', 2: 'Fear', 3: 'Happy', 4: 'Sad', 6: 'Neutral'}
+emotion_labels_modified = ['Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Neutral']
+
+
 
 ##########################
 
@@ -63,7 +68,8 @@ data_generator = ImageDataGenerator(
 class NNmodel:
 
     def __init__(self, model_name, num_classes, num_epochs, batch_size, num_features, width, height,
-                 path=default_path, emotion_map=emotion_map_default, emotion_labels=emotion_labels_default):
+                 path=default_path, emotion_map=emotion_map_default, emotion_labels=emotion_labels_default,
+                 emotion_count = emotion_counts):
         self.model_name = model_name
         self.num_classes = num_classes
         self.num_epochs = num_epochs
@@ -74,6 +80,7 @@ class NNmodel:
         self.path = path
         self.emotion_map = emotion_map
         self.emotion_labels = emotion_labels
+        self.emotion_count = emotion_count
 
 
     # CRNO stands for Convert, Reshape, Normalize, One-hot encoding
@@ -87,8 +94,45 @@ class NNmodel:
         print(dataName, "_X shape: {}, ", dataName, "_Y shape: {}".format(data_X.shape, data_Y.shape))
         return data_X, data_Y
 
-    def split_data(self, showfig=False):
+    def copy_csv(self, filename):
+        df = pd.read_csv(self.path)
+        df.to_csv('copy_of_' + self.path)
+
+
+    def drop_emotion(self, n):
+        self.copy_csv(self.path)
+        path_copy = 'copy_of_' + self.path
+
         data = pd.read_csv(self.path)
+        df = pd.read_csv(self.path, sep=',', header=0)
+        print(df)
+        result = df[np.logical_not(df['emotion'].astype(str).str.contains(str(n)))]
+        result['emotion'] = result['emotion'].astype(str).str.replace('6', '5')
+        result.to_csv('purged_csv_file.csv', index=False)
+        self.path = 'purged_csv_file.csv'
+        if n == 5:
+            self.emotion_count = default_data['emotion'].value_counts(sort=False).reset_index()
+            self.emotion_labels = emotion_labels_modified
+            self.emotion_map = emotion_map_modified
+            self.emotion_count.columns = ['emotion', 'number']
+            self.emotion_count['emotion'] = self.emotion_count['emotion'].map(emotion_map_modified)
+            # emotion_counts['emotion'] = emotion_counts['emotion'].map(emotion_map_modified)
+        print(result)
+
+
+        return 'purged_csv_file.csv'
+
+
+
+    def split_data(self, drop=-1):
+        if drop in range(7):
+            print('dropping emotion:', emotion_map_default[drop])
+
+            path = self.drop_emotion(drop)
+        else:
+            path = self.path
+
+        data = pd.read_csv(path)
         data_train = data[data['Usage'] == 'Training'].copy()
         data_val = data[data['Usage'] == 'PublicTest'].copy()
         data_test = data[data['Usage'] == 'PrivateTest'].copy()
@@ -105,14 +149,14 @@ class NNmodel:
         setup_axe(axes[2], data_test, 'test')
         plt.show()
 
-    def process_split_data(self):
-        data_train, data_val, data_test = self.split_data()
+    def process_split_data(self, drop=-1):
+        data_train, data_val, data_test = self.split_data(drop)
         train_X, train_Y = self.CRNO(data_train, "train")  # training data
         val_X, val_Y = self.CRNO(data_val, "val")  # validation data
         test_X, test_Y = self.CRNO(data_test, "test")  # test data
         return train_X, train_Y, val_X, val_Y, test_X, test_Y
 
-    def train_model(self):
+    def train_model(self, drop = -1):
         model_name = self.model_name
         num_features = self.num_features
 
@@ -160,8 +204,10 @@ class NNmodel:
             model.add(BatchNormalization())
             model.add(Activation('relu'))
             model.add(Dropout(0.1))
-
-            model.add(Dense(7, activation='softmax'))
+            if drop == -1:
+                model.add(Dense(7, activation='softmax'))
+            else:
+                model.add(Dense(6, activation='softmax'))
 
             lr_schedule = keras.optimizers.schedules.ExponentialDecay(
                 0.01,
@@ -177,7 +223,7 @@ class NNmodel:
         else:
             print("The selected model is not available")
 
-        data_train, data_val, data_test = self.split_data()
+        data_train, data_val, data_test = self.split_data(drop)
         train_X, train_Y = self.CRNO(data_train, "train")  # training data
         val_X, val_Y = self.CRNO(data_val, "val")  # validation data
         test_X, test_Y = self.CRNO(data_test, "test")  # test data
@@ -195,8 +241,13 @@ class NNmodel:
                             verbose=1,
                             callbacks=[cp, cpl, es],
                             validation_data=(val_X, val_Y))
-        model.save('./' + self.model_name + '_model_c.h5')
-        return './' + self.model_name + '_model_c.h5'
+
+        if drop != -1:
+            model_path = './' + self.model_name +'_d'+ str(drop) + '_model_c.h5'
+        else:
+            model_path = './' + self.model_name + '_model_c.h5'
+        model.save(model_path)
+        return model_path
 
     def nload_model(self, path):
         return tf.keras.models.load_model(path)
