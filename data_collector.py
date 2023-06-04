@@ -52,8 +52,7 @@ class collector:
             df = [str(e), self.string_builder(list(np.concatenate(image).flat)), datatype]
             writer.writerow(df)
 
-if __name__ == '__main__':
-    t = ''
+#if __name__ == '__main__':
     # Testing:
     # img_path = '/Users/psleborne/IdeaProjects/SE4AI/face_test.jpg'
     # n = collector()
@@ -73,4 +72,3 @@ if __name__ == '__main__':
     # plt.imshow(image1.astype(np.uint8))
     # plt.show()
     # n.save_img(img_array, 1)
-

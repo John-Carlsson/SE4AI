@@ -134,7 +134,7 @@ def main():
     print("Prediction:", prediction)
 
     #Running the model on a captured image:
-    img_path = '/Users/psleborne/IdeaProjects/SE4AI/face_test.jpg'
+    #img_path = '/Users/psleborne/IdeaProjects/SE4AI/face_test.jpg'
     # plt.imshow(img_path)
     # plt.show()
 
