@@ -4,11 +4,11 @@ import os
 import pandas as pd
 import sys
 
-sys.path.append(os.path.join(os.path.realpath(__file__), "SER", "Dagshub_code", "preprocessing_pipeline_ser.py"))
+sys.path.append(os.path.join(os.path.realpath(__file__), "preprocessing_pipeline_ser.py"))
 from preprocessing_pipeline_ser import preprocess
 
-sys.path.append(os.path.join(os.path.realpath(__file__), "SER", "Dagshub_code", "model_ser.py"))
-#from model_ser import Model
+sys.path.append(os.path.join(os.path.realpath(__file__), "model_ser.py"))
+from model_ser import Model
 
 sys.path.append(os.path.join(os.path.realpath(__file__),  "gui_combined.py"))
 

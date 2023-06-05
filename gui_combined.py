@@ -71,7 +71,10 @@ class App:
 
         self.good_button = Button(self.master, text='Correct', font=('arial', 25), fg='green', command=self.good_feedback)
         self.bad_button = Button(self.master, text='False', font=('arial', 25), fg='red', command=self.bad_feedback)
-        self.capture_button = Button(self.master, text='Capture', font=('arial', 25), fg='black', command=self.run_analysis)
+        self.capture_button = Button(self.master, text='Capture & Record', font=('arial', 25), fg='black', command=lambda:[self.record_signal(), self.run_analysis])
+        self.time_label = Label(text="00:00", pady=5)
+        self.recording = False
+        self.time_label.pack()
         self.capture_button.pack(side='bottom')
         self.bad_button.pack(side='bottom')
         self.good_button.pack(side='bottom')
@@ -147,9 +150,6 @@ class App:
             self.current_frame = None  # Disable stillframe
             self.show_video()
             self.update_model_with_feedback(true_emotion)
-            # Since we dont know what is wrong we can't update with any precise labels
-            # this becomes very impractible with more than 2 labels
-            # so this is just for possible use in for example a binary classifier
             
     def update_model_with_feedback(self, true_emotion):
         print("update model")
@@ -237,10 +237,10 @@ class App:
     def record_signal(self):
         if self.recording:
             self.recording = False
-            self.button.config(fg="black")
+            self.capture_button.config(fg="black")
         else:
             self.recording = True
-            self.button.config(fg="red")
+            self.capture_button.config(fg="red")
             print("Record started")
             threading.Thread(target=self.record).start()
 
@@ -253,7 +253,7 @@ class App:
 
         while self.recording:
             # read the data from the stream
-            audio_data = stream.read(1024)
+            audio_data = stream.read(1024, exception_on_overflow = False)
             audio_array.append(np.frombuffer(audio_data, dtype=np.float32))
 
             passed = time.time() - start
@@ -264,7 +264,7 @@ class App:
 
             if passed >= 5:
                 self.recording = False
-                self.button.config(fg="black")
+                self.capture_button.config(fg="black")
                 # only for testing
                 # self.publish_emotion_label("hallo", "moin")
 
@@ -274,9 +274,9 @@ class App:
         audio.terminate()
 
         audio_array_converted = np.concatenate(audio_array)
-        self.set_audio_for_feedback(audio_array_converted)
+        #self.set_audio_for_feedback(audio_array_converted)
 
-        from main_ser import add_data_to_queue
+        from main import add_data_to_queue
         add_data_to_queue(self, audio_array_converted)
 
         create_dataframe_audio_and_feedback(self)

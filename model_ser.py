@@ -11,14 +11,14 @@ import time
 import json
 import sys
 sys.path.append(os.path.join(os.path.realpath(__file__), "user_data.py"))
-from user_data import DAGSHUB_TOKEN, DAGSHUB_USER_NAME
+#from user_data import DAGSHUB_TOKEN, DAGSHUB_USER_NAME
 
 
-os.environ['MLFLOW_TRACKING_URI']=f"https://dagshub.com/{DAGSHUB_USER_NAME}/SER.mlflow"
+#os.environ['MLFLOW_TRACKING_URI']=f"https://dagshub.com/{DAGSHUB_USER_NAME}/SER.mlflow"
 
 # Recommended to define as environment variables
-os.environ['MLFLOW_TRACKING_USERNAME'] = DAGSHUB_USER_NAME
-os.environ['MLFLOW_TRACKING_PASSWORD'] = DAGSHUB_TOKEN
+#os.environ['MLFLOW_TRACKING_USERNAME'] = DAGSHUB_USER_NAME
+#os.environ['MLFLOW_TRACKING_PASSWORD'] = DAGSHUB_TOKEN
 
 
 
