@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edceac42-a317-4ae1-ae6e-bd77ea0609fb" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/SER/Dagshub code/main_ser_pipeline.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gui_combined.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui_combined.py" afterDir="false" />
-    </list>
+    <list default="true" id="edceac42-a317-4ae1-ae6e-bd77ea0609fb" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
