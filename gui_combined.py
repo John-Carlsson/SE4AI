@@ -71,7 +71,7 @@ class App:
 
         self.good_button = Button(self.master, text='Correct', font=('arial', 25), fg='green', command=self.good_feedback)
         self.bad_button = Button(self.master, text='False', font=('arial', 25), fg='red', command=self.bad_feedback)
-        self.capture_button = Button(self.master, text='Capture & Record', font=('arial', 25), fg='black', command=lambda:[self.record_signal(), self.run_analysis])
+        self.capture_button = Button(self.master, text='Capture & Record', font=('arial', 25), fg='black', command=self.both_methods)
         self.time_label = Label(text="00:00", pady=5)
         self.recording = False
         self.time_label.pack()
@@ -87,7 +87,6 @@ class App:
         self.angry_button = Button(self.master, text='Angry', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[1, 0, 0, 0, 0, 0, 0]])))
         self.suprise_button = Button(self.master, text='Surprise', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 0, 0, 0, 0, 1, 0]])))
         self.disgust_button = Button(self.master, text='Disgust', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 1, 0, 0, 0, 0, 0]])))
-
 
         self.text = Text(self.master, height=20, width=100, bg='skyblue')
         self.text.pack(side='top')
@@ -179,6 +178,8 @@ class App:
     # Capture button
     # TO-DO: input audio function
     def run_analysis(self):
+
+        print("moin")
         """Perform face analysis on the captured frame."""
         self.current_frame = self.camera.capture_frame()  # capture a frame
         # call function to record audio
@@ -186,6 +187,11 @@ class App:
         self.show_video()
         if self.current_frame is not None:
             self.analyse_face()
+
+
+    def both_methods(self):
+        self.run_analysis()
+        self.record_signal()
 
 
     def release(self):
@@ -232,7 +238,20 @@ class App:
         print("result = ", self.result)
 
         # result = self.model(self.face)
-        self.text.insert(END, self.text.insert(END, self.to_string() + '\n'))
+        self.text.insert(END, self.to_string() + '\n')
+
+        return self.result
+
+    def sending_results(self):
+
+        result_face = self.analyse_face()
+        result_voice = self.publish_emotion_label()
+
+
+
+        from main import combine_results
+        combine_results(result_face, result_voice)
+
 
     def record_signal(self):
         if self.recording:
@@ -279,7 +298,7 @@ class App:
         from main import add_data_to_queue
         add_data_to_queue(self, audio_array_converted)
 
-        create_dataframe_audio_and_feedback(self)
+        #create_dataframe_audio_and_feedback(self)
 
         def update_label_text(self, shared_variable):
             new_text = shared_variable
@@ -309,10 +328,16 @@ def create_dataframe_audio_and_feedback(self):
         print(recorded_dataframes)
 
 
-def publish_emotion_label(self, prediction_1, prediction_2):
+def publish_emotion_label(self, prediction_1):
     global shared_variable
     shared_variable = prediction_1[0]
-    self.update_label_text(shared_variable)
+    print(shared_variable)
+
+    return shared_variable
+
+    #self.update_label_text(shared_variable)
+
+
 
 
 if __name__ == '__main__':

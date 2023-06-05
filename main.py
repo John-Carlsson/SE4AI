@@ -34,7 +34,8 @@ from functools import partial
 from keras.optimizers import Adam
 
 
-#phono_model = Model(model_name="trial_data_model", input_shape=(128, 157, 3))  # phonological approach
+#phono_model = keras.models.load_model("coord_cnn_gru.pb")
+phono_model = Model(model_name="trial_data_model", input_shape=(128, 157, 3))  # phonological approach
 # lingu_models = Semantic_Approach()  # linguistic approach (semantic = meaning of the words)
 
 
@@ -83,8 +84,46 @@ def pipeline(self, data_queue):
     publish_emotion_label(self, probabilities_ser)
 
 
+
+
+
+def combine_results(fer_result: np.array, ser_result: np.array):
+
+    weight_fer = 0.5
+    emotion_mapping = ['Anger', 'Disgust', 'Fear', 'Happiness', 'Sadness', 'Neutral']
+    """ Combines the results of the two individual models, applying a weight on each of the result.
+
+    Parameters
+    ----------
+    fer_result : np.array
+        The probabilities predicted by the FER model
+    ser_result : np.array
+        The probabilities predicted by the SER model
+    weight_fer : float
+        The weighting factor by which the FER probabilities are multiplied. The SER probabilities are multiplied by the inverse.
+    emotion_mapping : list
+        The emotion labels in a specified order
+
+    Returns
+    -------
+    combined_result : string
+        a string representing the most likely emotion
+
+    """
+
+    weighted_fer_result = np.multiply(fer_result, weight_fer)
+    weighted_ser_result = np.multiply(ser_result, (1 - weight_fer))
+
+    combined_result = np.add(weighted_fer_result, weighted_ser_result)
+    most_likely_index = np.argmax(combined_result, axis=0)
+    most_likely_label = emotion_mapping[most_likely_index]
+
+    print(most_likely_label)
+
+    return most_likely_label
+
+
 if __name__ == "__main__":
-    print(os.getcwd())
     root = Tk()
     model = keras.models.load_model('./sequential_model_c.h5')
     app = App(root, model)
