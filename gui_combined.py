@@ -69,8 +69,8 @@ class App:
         self.label_widget = Label(self.master)
         self.label_widget.pack(side='left')
 
-        self.good_button = Button(self.master, text='Correct', font=('arial', 25), fg='green', command=self.good_feedback)
-        self.bad_button = Button(self.master, text='False', font=('arial', 25), fg='red', command=self.bad_feedback)
+        self.good_button = Button(self.master, text='Correct', font=('arial', 25), fg='green', command=self.good_feedback, state= DISABLED)
+        self.bad_button = Button(self.master, text='False', font=('arial', 25), fg='red', command=self.bad_feedback, state= DISABLED)
         self.capture_button = Button(self.master, text='Capture & Record', font=('arial', 25), fg='black', command=self.both_methods)
         self.time_label = Label(text="00:00", pady=5)
         self.recording = False
@@ -79,13 +79,13 @@ class App:
         self.bad_button.pack(side='bottom')
         self.good_button.pack(side='bottom')
 
-        # emotion label: 'Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral'
+        # emotion label: 'Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Neutral'
         self.happy_button = Button(self.master, text='Happy', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 0, 0, 1, 0, 0, 0]])))
         self.sad_button = Button(self.master, text='Sad', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 0, 0, 0, 1, 0, 0]])))
         self.neutral_button = Button(self.master, text='Neutral', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 0, 0, 0, 0, 0, 1]])))
         self.fear_button = Button(self.master, text='Fear', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 0, 1, 0, 0, 0, 0]])))
         self.angry_button = Button(self.master, text='Angry', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[1, 0, 0, 0, 0, 0, 0]])))
-        self.suprise_button = Button(self.master, text='Surprise', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 0, 0, 0, 0, 1, 0]])))
+        # self.suprise_button = Button(self.master, text='Surprise', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 0, 0, 0, 0, 1, 0]])))
         self.disgust_button = Button(self.master, text='Disgust', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 1, 0, 0, 0, 0, 0]])))
 
         self.text = Text(self.master, height=20, width=100, bg='skyblue')
@@ -116,6 +116,9 @@ class App:
             self.current_frame = None  # Disable stillframe
             self.show_video()
             self.update_model_with_feedback(np.array([[0, 0, 0, 0, 0, 0, 0]]))
+            self.capture_button.config(state=NORMAL)
+            self.good_button.config(state=DISABLED)
+            self.bad_button.config(state=DISABLED)
 
     def bad_feedback(self):
         """Handle the 'False' button click event."""
@@ -126,7 +129,6 @@ class App:
             self.neutral_button.pack(side='left')
             self.fear_button.pack(side='left')
             self.angry_button.pack(side='left')
-            self.suprise_button.pack(side='left')
             self.disgust_button.pack(side='left')
 
 
@@ -142,13 +144,16 @@ class App:
             self.neutral_button.pack_forget()
             self.fear_button.pack_forget()
             self.angry_button.pack_forget()
-            self.suprise_button.pack_forget()
             self.disgust_button.pack_forget()
 
 
             self.current_frame = None  # Disable stillframe
             self.show_video()
+            self.capture_button.config(state=NORMAL)
+            self.good_button.config(state=DISABLED)
+            self.bad_button.config(state=DISABLED)
             self.update_model_with_feedback(true_emotion)
+
             
     def update_model_with_feedback(self, true_emotion):
         print("update model")
@@ -227,7 +232,7 @@ class App:
 
     def to_string(self):
         """Convert the result to a string representation."""
-        emotion_labels = ['Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+        emotion_labels = ['Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Neutral']
         s = max(zip(self.result[0],emotion_labels))[1]
         return s
 
@@ -280,12 +285,15 @@ class App:
             secs = passed % 60
             mins = passed // 60
             self.time_label.config(text=f"{int(mins):02d}:{int(secs):02d}")
+            self.capture_button.config(state=DISABLED)
 
-            if passed >= 5:
+            if passed >= 3:
                 self.recording = False
                 self.capture_button.config(fg="black")
                 # only for testing
                 # self.publish_emotion_label("hallo", "moin")
+                self.bad_button.config(state=NORMAL)
+                self.good_button.config(state=NORMAL)
 
         print("Record stopped")
         stream.stop_stream()
@@ -342,7 +350,7 @@ def publish_emotion_label(self, prediction_1):
 
 if __name__ == '__main__':
     root = Tk()
-    model = keras.models.load_model('./sequential_model_c.h5')
+    model = keras.models.load_model('./sequential_d5_model_c.h5')
     app = App(root, model)
     root.mainloop()
     app.release()
