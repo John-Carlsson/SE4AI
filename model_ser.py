@@ -11,14 +11,14 @@ import time
 import json
 import sys
 sys.path.append(os.path.join(os.path.realpath(__file__), "user_data.py"))
-from user_data import DAGSHUB_TOKEN, DAGSHUB_USER_NAME
+#from user_data import DAGSHUB_TOKEN, DAGSHUB_USER_NAME
 
 
-os.environ['MLFLOW_TRACKING_URI']=f"https://dagshub.com/{DAGSHUB_USER_NAME}/SER.mlflow"
+#os.environ['MLFLOW_TRACKING_URI']=f"https://dagshub.com/{DAGSHUB_USER_NAME}/SER.mlflow"
 
 # Recommended to define as environment variables
-os.environ['MLFLOW_TRACKING_USERNAME'] = DAGSHUB_USER_NAME
-os.environ['MLFLOW_TRACKING_PASSWORD'] = DAGSHUB_TOKEN
+#os.environ['MLFLOW_TRACKING_USERNAME'] = DAGSHUB_USER_NAME
+#os.environ['MLFLOW_TRACKING_PASSWORD'] = DAGSHUB_TOKEN
 
 
 
@@ -198,21 +198,8 @@ class Model:
     def load_weights(self, weights_path):
       self.model.load_weights(weights_path)
 
-
-    def predict(self, data, single_sample: bool, class_mapping=None):
-        if single_sample:
-            probs = self.model(tf.convert_to_tensor(data[np.newaxis, ...]))
-        else:
-            probs = self.model.predict(tf.convert_to_tensor(list(data)))
-        
-        emotion_indeces = np.argmax(probs, axis=1)
-
-        if class_mapping is not None:
-            emotion_labels = [list(class_mapping.keys())[ind] for ind in emotion_indeces]
-            return probs, emotion_labels
-        else:
-            print("Warning: No emotion mapping given.")
-            return probs, emotion_indeces
+    def predict(self, data):
+        return self.model.predict(tf.convert_to_tensor(data[np.newaxis, ...]))
 
 
 

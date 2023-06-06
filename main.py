@@ -1,150 +1,134 @@
+# imports
+from tkinter import *
 import os
+import pandas as pd
+import sys
+
+sys.path.append(os.path.join(os.path.realpath(__file__), "preprocessing_pipeline_ser.py"))
+from preprocessing_pipeline_ser import preprocess
+
+sys.path.append(os.path.join(os.path.realpath(__file__), "model_ser.py"))
+from model_ser import Model
+
+sys.path.append(os.path.join(os.path.realpath(__file__),  "gui_combined.py"))
+
+from gui_combined import App
+
+# sys.path.append(os.path.join(os.path.realpath(__file__), "Semantic_approach.py"))
+# from Semantic_approach import Semantic_Approach
+sys.path.append(os.path.join(os.path.realpath(__file__), "gui_audio.py"))
+import threading
+import time
 import numpy as np
-import PIL
-import PIL.Image
-import tensorflow as tf
-import tensorflow_datasets as tfds
-import matplotlib
-import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
-#import file_import
-from skimage import io
+from datetime import datetime
+
+
+import cv2
 import keras
-from keras.utils import to_categorical
-from keras.callbacks import EarlyStopping
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
-from keras.losses import categorical_crossentropy
-from sklearn.metrics import accuracy_score
+import numpy as np
+from PIL import Image, ImageTk
+import platform
+import face_detection as fd
+import data_collector as dc
+from functools import partial
 from keras.optimizers import Adam
-from keras.regularizers import l2
-from keras.preprocessing.image import ImageDataGenerator
-from keras.applications.imagenet_utils import preprocess_input
-from keras.preprocessing import image
-from sklearn.metrics import classification_report, confusion_matrix
-import matplotlib.pyplot as plt
-import seaborn as sns
-from keras.layers import LeakyReLU
-
-import nnmodel
 
 
-matplotlib.use('TkAgg')
-
-#path1 = '/Users/psleborne/Documents/Vorlesungen/Skript/SoftwareEngAI/Emotional_Recognition/Datasets/data1'
-#path2 = '/Users/psleborne/Documents/Vorlesungen/Skript/SoftwareEngAI/Emotional_Recognition/Datasets/data2'
-
-
-#data = pd.read_csv('/Users/psleborne/Documents/Vorlesungen/Skript/SoftwareEngAI/Emotional_Recognition/Datasets/data2/fer2013.csv')
-#emotion_map = {0: 'Angry', 1: 'Digust', 2: 'Fear', 3: 'Happy', 4: 'Sad', 5: 'Surprise', 6: 'Neutral'}
-#emotion_counts = data['emotion'].value_counts(sort=False).reset_index()
-#emotion_counts.columns = ['emotion', 'number']
-#emotion_counts['emotion'] = emotion_counts['emotion'].map(emotion_map)
-#print(emotion_counts)
-
-emotion_labels = ['Angry', 'disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
-
-# initilize parameters
-num_classes = 7
-width, height = 48, 48
-num_epochs = 50
-batch_size = 64
-num_features = 64
+#phono_model = keras.models.load_model("coord_cnn_gru.pb")
+phono_model = Model(model_name="trial_data_model", input_shape=(128, 157, 3))  # phonological approach
+# lingu_models = Semantic_Approach()  # linguistic approach (semantic = meaning of the words)
 
 
-def row2image(row):
-    pixels, emotion = row['pixels'], emotion_map[row['emotion']]
-    img = np.array(pixels.split())
-    img = img.reshape(48, 48)
-    image = np.zeros((48, 48, 3))
-    image[:, :, 0] = img
-    image[:, :, 1] = img
-    image[:, :, 2] = img
-    return np.array([image.astype(np.uint8), emotion])
+data_to_process = []  # Queue for input data that will be fed into the models
+data_with_feedback = pd.DataFrame(
+    columns=["Spectrogram", "Feedback"])  # Storage for the samples to train the models later
 
 
-def main():
-    # print("Using Tensorflow version: ", tf.__version__)
-    # Tensorflow: create a TF dataset from folder
 
-    # For performance testing: (This disables the usage of the GPU)
-    # tf.config.set_visible_devices([], 'GPU')
+# Accessed by User Interface
+def add_data_to_queue(self, data):
+    print("Appended a recording")
+    data_to_process.append(data)
+    print(data_to_process)
+    pipeline(self, data_to_process)
 
-    #print(os.listdir(path2))
 
-    # check data shape
-    #data.shape
-    #data.head(5)
-    #data.Usage.value_counts()
+# Accessed by the User Interface
+def store_feedback(feedback, id):
+    data_with_feedback.at[id, "Feedback"] = feedback
 
-    # Plotting a bar graph of the class distributions
-    #plt.figure(figsize=(6, 4))
-    #sns.barplot(x=emotion_counts.emotion, y=emotion_counts.number)
-    #plt.title('Class distribution')
-    #plt.ylabel('Number', fontsize=12)
-    #plt.xlabel('Emotions', fontsize=12)
-    #plt.show()
 
-    #plt.figure(0, figsize=(16, 10))
-    #for i in range(1, 8):
-    #    face = data[data['emotion'] == i - 1].iloc[0]
-    #    img = row2image(face)
-    #    plt.subplot(2, 4, i)
-    #    plt.imshow(img[0])
-    #    plt.title(img[1])
+def pipeline(self, data_queue):
+    print("Listening to input")
 
-    #plt.show()
+    global data_to_process
+    global data_with_feedback
 
-    # new_model = nnmodel.NNmodel('sequential', num_classes, num_epochs, batch_size, num_features, width, height)
-    # model_path = new_model.train_model()
-    # print(model_path)
+    data_sample = data_queue.pop(0)
 
-##### Tresting model: #########
+    data_sample_new = np.nan_to_num(data_sample, copy=True, nan=0.0, posinf=None, neginf=None)
 
-    new_model = nnmodel.NNmodel('sequential1', num_classes, num_epochs, batch_size, num_features, width, height)
+    spec = preprocess(data_sample_new)
 
-    model_path = './sequential_model_c.h5'
+    # Store the spectrogram in a Dataframe for adding the user feedback later. The index of the row is the ID of the sample.
+    list_to_append = pd.DataFrame([spec, None])
+    data_with_feedback = pd.concat([data_with_feedback, list_to_append])
+    id = data_with_feedback.shape[
+             0] - 1  # get the number of rows to compute the index of the last appended row which is the ID of the sample/spectrogram -> TODO: pass it to the GUI, so that it can return the feedback together with the ID of the sample -> necessary for storing the feedback together with the spectrogram
 
-    model = new_model.nload_model(model_path)
-    model.summary()
-    #Testing model on test-dataset
-    train_X, train_Y, val_X, val_Y, test_X, test_Y = new_model.process_split_data()
-    # test_loss, test_acc = model.evaluate(test_X, test_Y)
-    # print(test_acc)
-    #selecting a random image from test-set
-    selected_img = np.random.randint(0, 3589)
-    features = test_X[selected_img]
-    print("features = ", features)
-    img = np.array(features)
-    img = img.reshape(48, 48)
-    image1 = np.zeros((48, 48, 3))
-    image1[:, :, 0] = img * 255
-    image1[:, :, 1] = img * 255
-    image1[:, :, 2] = img * 255
-    plt.imshow(image1.astype(np.uint8))
-    plt.show()
-    label = test_Y[selected_img]
-    print(label)
-    print(features)
-    print(np.asarray(features).shape)
-    img_array = tf.keras.utils.img_to_array(features)
-    img_batch = np.expand_dims(img_array, axis=0)
-    prediction = model.predict(np.asarray(img_batch))
-    print("Actual:", label )
-    print("Prediction:", prediction)
+    probabilities_ser = phono_model.predict(spec)
 
-    #Running the model on a captured image:
-    #img_path = '/Users/psleborne/IdeaProjects/SE4AI/face_test.jpg'
-    # plt.imshow(img_path)
-    # plt.show()
 
-    img1 = tf.keras.utils.load_img(img_path, color_mode = "grayscale", target_size=(48, 48))
-    img_array = tf.keras.utils.img_to_array(img1)
-    img_batch = np.expand_dims(img_array, axis=0)
-    prediction = model.predict(img_batch)
-    print(prediction)
 
+    from gui_combined import publish_emotion_label
+    publish_emotion_label(self, probabilities_ser)
+
+
+
+
+
+def combine_results(fer_result: np.array, ser_result: np.array):
+
+    weight_fer = 0.5
+    emotion_mapping = ['Anger', 'Disgust', 'Fear', 'Happiness', 'Sadness', 'Neutral']
+    """ Combines the results of the two individual models, applying a weight on each of the result.
+
+    Parameters
+    ----------
+    fer_result : np.array
+        The probabilities predicted by the FER model
+    ser_result : np.array
+        The probabilities predicted by the SER model
+    weight_fer : float
+        The weighting factor by which the FER probabilities are multiplied. The SER probabilities are multiplied by the inverse.
+    emotion_mapping : list
+        The emotion labels in a specified order
+
+    Returns
+    -------
+    combined_result : string
+        a string representing the most likely emotion
+
+    """
+
+    weighted_fer_result = np.multiply(fer_result, weight_fer)
+    weighted_ser_result = np.multiply(ser_result, (1 - weight_fer))
+
+    combined_result = np.add(weighted_fer_result, weighted_ser_result)
+    most_likely_index = np.argmax(combined_result, axis=0)
+    most_likely_label = emotion_mapping[most_likely_index]
+
+    print(most_likely_label)
+
+    return most_likely_label
 
 
 if __name__ == "__main__":
-    main()
+    root = Tk()
+    model = keras.models.load_model('./sequential_model_c.h5')
+    app = App(root, model)
+    root.mainloop()
+    app.release()
+
+
+

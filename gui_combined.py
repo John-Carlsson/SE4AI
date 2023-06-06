@@ -7,7 +7,15 @@ import platform
 import data_collector as dc
 from functools import partial
 from keras.optimizers import Adam
+import os
+import wave
+import time
+import threading
+import pyaudio
+import pandas as pd
 
+audio_array = []
+recorded_dataframes = []
 
 class Camera:
 
@@ -63,7 +71,10 @@ class App:
 
         self.good_button = Button(self.master, text='Correct', font=('arial', 25), fg='green', command=self.good_feedback)
         self.bad_button = Button(self.master, text='False', font=('arial', 25), fg='red', command=self.bad_feedback)
-        self.capture_button = Button(self.master, text='Capture', font=('arial', 25), fg='black', command=self.run_analysis)
+        self.capture_button = Button(self.master, text='Capture & Record', font=('arial', 25), fg='black', command=self.both_methods)
+        self.time_label = Label(text="00:00", pady=5)
+        self.recording = False
+        self.time_label.pack()
         self.capture_button.pack(side='bottom')
         self.bad_button.pack(side='bottom')
         self.good_button.pack(side='bottom')
@@ -76,7 +87,6 @@ class App:
         self.angry_button = Button(self.master, text='Angry', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[1, 0, 0, 0, 0, 0, 0]])))
         self.suprise_button = Button(self.master, text='Surprise', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 0, 0, 0, 0, 1, 0]])))
         self.disgust_button = Button(self.master, text='Disgust', font=('arial', 25), fg='black', command=lambda: self.bad_real_emotion(np.array([[0, 1, 0, 0, 0, 0, 0]])))
-
 
         self.text = Text(self.master, height=20, width=100, bg='skyblue')
         self.text.pack(side='top')
@@ -139,9 +149,6 @@ class App:
             self.current_frame = None  # Disable stillframe
             self.show_video()
             self.update_model_with_feedback(true_emotion)
-            # Since we dont know what is wrong we can't update with any precise labels
-            # this becomes very impractible with more than 2 labels
-            # so this is just for possible use in for example a binary classifier
             
     def update_model_with_feedback(self, true_emotion):
         print("update model")
@@ -171,6 +178,8 @@ class App:
     # Capture button
     # TO-DO: input audio function
     def run_analysis(self):
+
+        print("moin")
         """Perform face analysis on the captured frame."""
         self.current_frame = self.camera.capture_frame()  # capture a frame
         # call function to record audio
@@ -178,6 +187,11 @@ class App:
         self.show_video()
         if self.current_frame is not None:
             self.analyse_face()
+
+
+    def both_methods(self):
+        self.run_analysis()
+        self.record_signal()
 
 
     def release(self):
@@ -224,7 +238,107 @@ class App:
         print("result = ", self.result)
 
         # result = self.model(self.face)
-        self.text.insert(END, self.text.insert(END, self.to_string() + '\n'))
+        self.text.insert(END, self.to_string() + '\n')
+
+        return self.result
+
+    def sending_results(self):
+
+        result_face = self.analyse_face()
+        result_voice = self.publish_emotion_label()
+
+
+
+        from main import combine_results
+        combine_results(result_face, result_voice)
+
+
+    def record_signal(self):
+        if self.recording:
+            self.recording = False
+            self.capture_button.config(fg="black")
+        else:
+            self.recording = True
+            self.capture_button.config(fg="red")
+            print("Record started")
+            threading.Thread(target=self.record).start()
+
+    def record(self):
+        audio = pyaudio.PyAudio()
+        stream = audio.open(format=pyaudio.paInt16, channels=1, rate=16000,
+                            input=True, frames_per_buffer=512)
+
+        start = time.time()
+
+        while self.recording:
+            # read the data from the stream
+            audio_data = stream.read(1024, exception_on_overflow = False)
+            audio_array.append(np.frombuffer(audio_data, dtype=np.float32))
+
+            passed = time.time() - start
+
+            secs = passed % 60
+            mins = passed // 60
+            self.time_label.config(text=f"{int(mins):02d}:{int(secs):02d}")
+
+            if passed >= 5:
+                self.recording = False
+                self.capture_button.config(fg="black")
+                # only for testing
+                # self.publish_emotion_label("hallo", "moin")
+
+        print("Record stopped")
+        stream.stop_stream()
+        stream.close()
+        audio.terminate()
+
+        audio_array_converted = np.concatenate(audio_array)
+        #self.set_audio_for_feedback(audio_array_converted)
+
+        from main import add_data_to_queue
+        add_data_to_queue(self, audio_array_converted)
+
+        #create_dataframe_audio_and_feedback(self)
+
+        def update_label_text(self, shared_variable):
+            new_text = shared_variable
+            self.phonological_var.set(new_text)
+
+        def set_user_feedback(self, emotion):
+            self.user_feedback_emotion = emotion
+
+        def get_user_feedback(self):
+            return self.user_feedback_emotion
+
+        def set_audio_for_feedback(self, recorded_audio):
+            self.recorded_audio = recorded_audio
+
+        def get_audio_for_feedback(self):
+            return self.recorded_audio
+
+def create_dataframe_audio_and_feedback(self):
+
+        emotion = self.get_user_feedback()
+        audio = self.get_audio_for_feedback()
+
+        data = {'Emotion': [emotion], 'Audio Array': [audio]}
+        df = pd.DataFrame(data)
+        recorded_dataframes.append(df)
+
+        print(recorded_dataframes)
+
+
+def publish_emotion_label(self, prediction_1):
+    global shared_variable
+    shared_variable = prediction_1[0]
+    print(shared_variable)
+
+    return shared_variable
+
+    #self.update_label_text(shared_variable)
+
+
+
 
 if __name__ == '__main__':
     root = Tk()
