@@ -52,23 +52,3 @@ class collector:
             df = [str(e), self.string_builder(list(np.concatenate(image).flat)), datatype]
             writer.writerow(df)
 
-#if __name__ == '__main__':
-    # Testing:
-    # img_path = '/Users/psleborne/IdeaProjects/SE4AI/face_test.jpg'
-    # n = collector()
-    # n.create_new_file()
-    # img1 = tf.keras.utils.load_img(img_path, color_mode = "grayscale", target_size=(48, 48))
-    # img_array = tf.keras.utils.img_to_array(img1)
-    # img_batch = np.expand_dims(img_array, axis=0)
-    # print(img_array)
-
-
-
-    # img = img_array.reshape(48, 48)
-    # image1 = np.zeros((48, 48, 3))
-    # image1[:, :, 0] = img * 255
-    # image1[:, :, 1] = img * 255
-    # image1[:, :, 2] = img * 255
-    # plt.imshow(image1.astype(np.uint8))
-    # plt.show()
-    # n.save_img(img_array, 1)
