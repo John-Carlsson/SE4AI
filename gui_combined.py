@@ -13,6 +13,7 @@ import time
 import threading
 import pyaudio
 import pandas as pd
+import time
 
 audio_array = []
 recorded_dataframes = []
@@ -133,7 +134,7 @@ class App:
 
 
     def bad_real_emotion(self, true_emotion):
-        """Handle the 'False' button click event."""
+        """Handle the 'False' button click event and takes feedback for real emotion."""
         if self.current_frame is not None:
             
             #how does feedback function work?
@@ -243,19 +244,10 @@ class App:
         print("result = ", self.result)
 
         # result = self.model(self.face)
+        time.sleep(1)
         self.text.insert(END, self.to_string() + '\n')
 
         return self.result
-
-    def sending_results(self):
-
-        result_face = self.analyse_face()
-        result_voice = self.publish_emotion_label()
-
-
-
-        from main import combine_results
-        combine_results(result_face, result_voice)
 
 
     def record_signal(self):
@@ -346,11 +338,19 @@ def publish_emotion_label(self, prediction_1):
     #self.update_label_text(shared_variable)
 
 
+def sending_results(self):
+
+    result_face = self.analyse_face()
+    result_voice = self.publish_emotion_label()
 
 
-if __name__ == '__main__':
-    root = Tk()
-    model = keras.models.load_model('./sequential_d5_model_c.h5')
-    app = App(root, model)
-    root.mainloop()
-    app.release()
+
+    from main import combine_results
+    combine_results(result_face, result_voice)
+
+# if __name__ == '__main__':
+#     root = Tk()
+#     model = keras.models.load_model('./sequential_d5_model_c.h5')
+#     app = App(root, model)
+#     root.mainloop()
+#     app.release()
