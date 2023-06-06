@@ -22,7 +22,7 @@ python -m ipykernel install --user --name=<env_name>
 
 ### Starting the Application
 
-To start the combined Application just run main.py, to start the FER application run gui_fer.py and to start the SER application run gui_ser.py
+To start the combined Application just run main.py, to start the FER application run gui_fer.py and to start the SER application run the file main_ser.py in the SER folder.
 
 
 ## Datasets
