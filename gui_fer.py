@@ -184,7 +184,7 @@ class App:
         self.camera.release()
 
     def get_detected_face(self):
-        self.face, captured, startX, startY, endX, endY = fd.detect_face2(self.current_frame)
+        self.face, captured, startX, startY, endX, endY = fd.detect_face(self.current_frame)
         self.current_frame = cv2.rectangle(self.current_frame, (startX, startY), (endX, endY), (0, 255, 255), 2)
         if captured:
             self.analyse = True
