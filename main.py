@@ -34,8 +34,10 @@ from functools import partial
 from keras.optimizers import Adam
 
 
-#phono_model = keras.models.load_model("coord_cnn_gru.pb")
-phono_model = Model(model_name="trial_data_model", input_shape=(128, 157, 3))  # phonological approach
+#phono_model = keras.models.load_model("./coord-cnn-gru.h5")
+#config = phono_model.get_config()
+#print(config)
+phono_model = Model(model_name="./coord-cnn-gru")  # phonological approach
 # lingu_models = Semantic_Approach()  # linguistic approach (semantic = meaning of the words)
 
 
@@ -67,14 +69,15 @@ def pipeline(self, data_queue):
     data_sample = data_queue.pop(0)
 
     data_sample_new = np.nan_to_num(data_sample, copy=True, nan=0.0, posinf=None, neginf=None)
-
+    print(data_sample_new.shape)
     spec = preprocess(data_sample_new)
 
     # Store the spectrogram in a Dataframe for adding the user feedback later. The index of the row is the ID of the sample.
-    list_to_append = pd.DataFrame([spec, None])
-    data_with_feedback = pd.concat([data_with_feedback, list_to_append])
-    id = data_with_feedback.shape[
-             0] - 1  # get the number of rows to compute the index of the last appended row which is the ID of the sample/spectrogram -> TODO: pass it to the GUI, so that it can return the feedback together with the ID of the sample -> necessary for storing the feedback together with the spectrogram
+    print(spec.shape)
+    #list_to_append = pd.DataFrame([zip(spec), None],columns=["Spectrogram", "Feedback"])
+    #data_with_feedback = pd.concat([data_with_feedback, list_to_append])
+    #id = data_with_feedback.shape[
+    #         0] - 1  # get the number of rows to compute the index of the last appended row which is the ID of the sample/spectrogram -> TODO: pass it to the GUI, so that it can return the feedback together with the ID of the sample -> necessary for storing the feedback together with the spectrogram
 
     probabilities_ser = phono_model.predict(spec)
 

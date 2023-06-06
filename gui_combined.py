@@ -279,7 +279,7 @@ class App:
             self.time_label.config(text=f"{int(mins):02d}:{int(secs):02d}")
             self.capture_button.config(state=DISABLED)
 
-            if passed >= 3:
+            if passed >= 5:
                 self.recording = False
                 self.capture_button.config(fg="black")
                 # only for testing

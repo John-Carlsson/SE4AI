@@ -40,7 +40,7 @@ def preprocess(input_sample, target_length=80000):
     # Reshape to 3D, where the third dimension is number of channels (here: 1)
     reshaped_spec = np.reshape(mel_spec, (*mel_spec.shape, 1))
 
-    height = reshaped_spec.shape[0]
+    """height = reshaped_spec.shape[0]
     width = reshaped_spec.shape[1]
     # Create coordinate grids
     x_coords = tf.linspace(-1.0, 1.0, width)
@@ -48,10 +48,10 @@ def preprocess(input_sample, target_length=80000):
     x_coords, y_coords = tf.meshgrid(x_coords, y_coords)
     # Add channel dimension
     expanded_x_coords = tf.expand_dims(x_coords, -1)
-    expanded_y_coords = tf.expand_dims(y_coords, -1)
+    expanded_y_coords = tf.expand_dims(y_coords, -1)"""
 
     # Append the coordinate information to the spectrogram 
-    combined = tf.concat([reshaped_spec, expanded_x_coords, expanded_y_coords], axis=-1)
+    #combined = tf.concat([reshaped_spec, expanded_x_coords, expanded_y_coords], axis=-1)
 
-    return combined
+    return reshaped_spec
 

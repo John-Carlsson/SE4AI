@@ -24,7 +24,8 @@ sys.path.append(os.path.join(os.path.realpath(__file__), "user_data.py"))
 
 
 ### Default path ###
-default_path_store_model = os.path.join(os.pardir, "data")
+#default_path_store_model = os.path.join(os.pardir, "data")
+default_path_store_model = ""
 default_path_checkpoint_weights = os.path.join(os.pardir, "data", "cp_weights")
 
 ### Default emotion mapping ###
@@ -58,7 +59,7 @@ class Model:
         self.model = model
 
         if self.model == None:
-            if os.path.isfile(os.path.join(self.path, self.model_name, ".h5")):
+            if os.path.isfile("./coord-cnn-gru.h5"):
                 self.model = self._load_model()
                 print("Model %s has been loaded from %s. "%(self.model_name, self.path))
             else: 
@@ -66,7 +67,7 @@ class Model:
 
 
     def _load_model(self):
-        self.model = tf.keras.models.load_model(os.path.join(self.path, self.model_name, ".h5"))
+        self.model = tf.keras.models.load_model("./coord-cnn-gru.h5")
         return self.model
     
 
