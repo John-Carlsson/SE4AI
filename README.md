@@ -20,6 +20,10 @@ Depending on the IDE used, further steps may be required to add the environment 
 console
 python -m ipykernel install --user --name=<env_name>
 
+### Starting the Application
+
+To start the combined Application just run main.py, to start the FER application run gui_fer.py and to start the SER application run gui_ser.py
+
 
 ## Datasets
 
