@@ -62,19 +62,13 @@ def pipeline(self, data_queue):
     list_to_append = pd.DataFrame([spec, None])
     data_with_feedback = pd.concat([data_with_feedback, list_to_append])
     id = data_with_feedback.shape[0] - 1  # get the number of rows to compute the index of the last appended row which is the ID of the sample/spectrogram -> TODO: pass it to the GUI, so that it can return the feedback together with the ID of the sample -> necessary for storing the feedback together with the spectrogram
-    print("irgendwo hier haperts")
-    start_time = datetime.now()
-    print(start_time)
     # Prediction based on phonological info
     probs, prediction_1 = phono_model.predict(spec,single_sample=True)  # TODO: maybe also show the predicted probability in the GUI?
-    print("nach phono model prediction, vor lingu models prediction")
-    print(datetime.now())
     # Prediction based on linguistic info
     #prediction_2 = lingu_models.speech_to_emotion(data_sample)
     prediction_2 = "placeholder"
-    print("nach prediction, vor publishing")
-    print(datetime.now())
     #print(datetime.now() - start_time)
+    print("prediciton was made, ready to publish")
     from gui_audio import publish_emotion_label
     publish_emotion_label(self, prediction_1, prediction_2)
 

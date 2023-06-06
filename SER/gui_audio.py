@@ -34,13 +34,6 @@ class VoiceRecorder:
         self.phonological_prediction.pack()
 
 
-        self.linguistic_label = tk.Label(self.window, text="Linguistic Prediction",  font=("Robot", 18))
-        self.linguistic_label.pack()
-
-        self.linguistic_prediction = tk.Label(self.window,borderwidth=2, relief="groove",  textvariable=self.linguistic_var,
-                                              width=15, height=3, font=("Robot", 10))
-        self.linguistic_prediction.pack()
-
         self.button = tk.Button(text="Record", font=("Robot", 80, "bold"),
                                 command=self.record_signal)
         self.button.pack()
