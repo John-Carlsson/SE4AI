@@ -4,7 +4,6 @@ import keras
 import numpy as np
 from PIL import Image, ImageTk
 import platform
-import face_detection as fd
 import data_collector as dc
 from functools import partial
 from keras.optimizers import Adam
@@ -170,12 +169,14 @@ class App:
         self.feedback = None
 
     # Capture button
+    # TO-DO: input audio function
     def run_analysis(self):
         """Perform face analysis on the captured frame."""
         self.current_frame = self.camera.capture_frame()  # capture a frame
-        self.get_detected_face()
+        # call function to record audio
+        self.detect_face()
         self.show_video()
-        if self.current_frame is not None and self.face is not None:
+        if self.current_frame is not None:
             self.analyse_face()
 
 
@@ -183,13 +184,32 @@ class App:
         """Release the camera."""
         self.camera.release()
 
-    def get_detected_face(self):
-        self.face, captured, startX, startY, endX, endY = fd.detect_face2(self.current_frame)
-        self.current_frame = cv2.rectangle(self.current_frame, (startX, startY), (endX, endY), (0, 255, 255), 2)
-        if captured:
-            self.analyse = True
+    
+    def detect_face(self):
+        """Detect faces in the current frame and extract the region of interest."""
+        # Convert the image to grayscale
+        gray = cv2.cvtColor(self.current_frame, cv2.COLOR_BGR2GRAY)
+
+        # Detect faces in the image and return them
+        faces = self.face_detection.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=4)
+
+        if len(faces) > 0:
+            # Get the first detected face So that if multiple persons in frame we just look at one
+            (x, y, w, h) = faces[0]
+
+            # Extract the region of interest containing the face
+            face_roi = self.current_frame[y:y+h, x:x+w]
+
+            # Display picture with a frame around the face
+            self.current_frame = cv2.rectangle(self.current_frame, (x, y), (x + w, y + h), (0, 255, 255), 2)
+
+            dim = (48, 48)
+            self.face = cv2.resize(cv2.cvtColor(face_roi, cv2.COLOR_BGR2GRAY), dim, interpolation = cv2.INTER_AREA)/255
+            
+            
         else:
             self.text.insert(END, "No face detected\n")
+            self.current_frame = None
 
     def to_string(self):
         """Convert the result to a string representation."""
@@ -204,7 +224,7 @@ class App:
         print("result = ", self.result)
 
         # result = self.model(self.face)
-        self.text.insert(END, self.to_string() + '\n')
+        self.text.insert(END, self.text.insert(END, self.to_string() + '\n'))
 
 if __name__ == '__main__':
     root = Tk()
