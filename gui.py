@@ -175,7 +175,7 @@ class App:
         self.current_frame = self.camera.capture_frame()  # capture a frame
         self.get_detected_face()
         self.show_video()
-        if self.current_frame is not None:
+        if self.current_frame is not None and self.face is not None:
             self.analyse_face()
 
 
@@ -204,7 +204,7 @@ class App:
         print("result = ", self.result)
 
         # result = self.model(self.face)
-        self.text.insert(END, self.text.insert(END, self.to_string() + '\n'))
+        self.text.insert(END, self.to_string() + '\n')
 
 if __name__ == '__main__':
     root = Tk()
