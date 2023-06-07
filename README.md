@@ -22,7 +22,14 @@ python -m ipykernel install --user --name=<env_name>
 
 ### Starting the Application
 
-To start the combined Application just run main.py, to start the FER application run gui_fer.py and to start the SER application run the file main_ser.py in the SER folder.
+To start the combined Application just run main.py, to start the FER application run gui_fer.py and to start the SER application run the file main_ser.py in the SER folder. 
+
+If you want the fer Dataset and want to run the FER model run nnmodel.py, where you will automatically fetch the dataset over the fetch dataset script. For the SER model run model_ser.py. There are also ipynb files included with visualisations. 
+
+## Demo
+
+For the FER Demo: https://drive.google.com/file/d/1a25Jo0l7fwsFXtUNEdcOOBaPUbsTWeou/view?usp=sharing
+For the Combined Demo: https://drive.google.com/file/d/1Wl-PClEC4o_9wKDE3NU5kT_-w5uXieZg/view?usp=sharing
 
 
 ## Datasets
